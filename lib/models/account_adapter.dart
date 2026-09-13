@@ -1,5 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:asend/models/Account.dart';
+import 'package:asend/models/account.dart';
 
 class AccountAdapter extends TypeAdapter<Account> {
   @override

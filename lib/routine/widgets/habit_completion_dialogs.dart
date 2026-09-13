@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:asend/models/DailyRoutineHabit.dart';
+import 'package:asend/models/daily_routine_habit.dart';
 import 'package:asend/routine/services/habit_history_service.dart';
 
 // Dialog 1: Confirmación inicial

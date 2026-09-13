@@ -10,7 +10,7 @@ import 'package:asend/database/store_hive_service.dart';
 import 'package:asend/home/widgets/module_bar.dart';
 import 'package:asend/missions/services/mission_service.dart';
 import 'package:asend/missions/widgets/mission_completion_dialog.dart';
-import 'package:asend/models/DailyRoutineHabit.dart';
+import 'package:asend/models/daily_routine_habit.dart';
 import 'package:asend/routine/services/day_change_service.dart';
 import 'package:asend/routine/services/habit_history_service.dart';
 import 'package:asend/routine/widgets/habit_completion_dialogs.dart';

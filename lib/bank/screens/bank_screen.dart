@@ -2,7 +2,7 @@ import 'package:asend/bank/screens/select_fund_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:asend/bank/services/account_service.dart';
 import 'package:asend/bank/screens/add_account_screen.dart';
-import 'package:asend/models/Account.dart';
+import 'package:asend/models/account.dart';
 import 'package:asend/theme/app_theme.dart';
 
 class BankScreen extends StatefulWidget {

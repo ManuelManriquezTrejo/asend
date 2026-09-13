@@ -3,7 +3,7 @@ import 'package:asend/models/account_adapter.dart';
 import 'package:asend/models/fund_adapter.dart';
 import 'package:asend/models/fund_account_adapter.dart';
 import 'package:asend/models/account_history_adapter.dart';
-import 'package:asend/models/AccountHistory.dart';
+import 'package:asend/models/account_history.dart';
 
 class HiveService {
   // Nombres de las tablas

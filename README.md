@@ -2,7 +2,7 @@
 
 App de productividad personal para Android, construida en Flutter con almacenamiento local.
 
-La idea: cumplir hábitos y misiones reales genera dinero dentro de la app, que después se canjea por recompensas de la vida real. Un sistema de incentivos propio, hecho a la medida.
+La idea: App personal para registro de; Actividades, rutinas, futuras compras, rutinas de gym, cuentas personales, cumpleaños y mas con apartados para autocalificar actividades y obtener recompesas.
 
 ## Módulos
 

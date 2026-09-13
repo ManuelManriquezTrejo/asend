@@ -1,6 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:asend/models/Fund.dart';
-import 'package:asend/models/FundAccount.dart';
+import 'package:asend/models/fund.dart';
+import 'package:asend/models/fund_account.dart';
 
 class FundService {
   static const String fundsBoxName = 'funds';

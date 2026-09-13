@@ -1,5 +1,5 @@
-import 'package:asend/models/HabitHistory.dart';
-import 'package:asend/models/DailyRoutineHabit.dart';
+import 'package:asend/models/habit_history.dart';
+import 'package:asend/models/daily_routine_habit.dart';
 import 'package:asend/database/routine_hive_service.dart';
 import 'package:asend/config/app_config.dart';
 import 'package:asend/cashout/services/cash_out_service.dart';

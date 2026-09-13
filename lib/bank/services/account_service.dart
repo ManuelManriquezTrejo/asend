@@ -1,6 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:asend/models/Account.dart';
-import 'package:asend/models/AccountHistory.dart';
+import 'package:asend/models/account.dart';
+import 'package:asend/models/account_history.dart';
 import 'package:asend/database/hive_service.dart';
 
 class AccountService {

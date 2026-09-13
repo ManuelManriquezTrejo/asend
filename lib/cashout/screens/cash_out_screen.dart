@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:asend/models/cash_out.dart';
-import 'package:asend/models/Account.dart';
+import 'package:asend/models/account.dart';
 import 'package:asend/theme/app_theme.dart';
 import 'package:asend/bank/services/account_service.dart';
 import 'package:asend/cashout/services/cash_out_service.dart';

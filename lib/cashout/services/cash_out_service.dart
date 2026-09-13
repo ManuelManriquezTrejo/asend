@@ -1,5 +1,5 @@
 import 'package:asend/models/cash_out.dart';
-import 'package:asend/models/HabitHistory.dart';
+import 'package:asend/models/habit_history.dart';
 import 'package:asend/database/cash_out_hive_service.dart';
 import 'package:asend/database/routine_hive_service.dart';
 import 'package:asend/bank/services/account_service.dart';

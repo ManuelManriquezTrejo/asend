@@ -1,8 +1,8 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:asend/models/daily_routine_habit_adapter.dart';
 import 'package:asend/models/habit_history_adapter.dart';
-import 'package:asend/models/DailyRoutineHabit.dart';
-import 'package:asend/models/HabitHistory.dart';
+import 'package:asend/models/daily_routine_habit.dart';
+import 'package:asend/models/habit_history.dart';
 
 class RoutineHiveService {
   // Nombres de las tablas de Rutina

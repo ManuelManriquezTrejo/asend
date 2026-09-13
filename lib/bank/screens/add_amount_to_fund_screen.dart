@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:asend/models/Fund.dart';
-import 'package:asend/models/FundAccount.dart';
-import 'package:asend/models/Account.dart';
+import 'package:asend/models/fund.dart';
+import 'package:asend/models/fund_account.dart';
+import 'package:asend/models/account.dart';
 import 'package:asend/bank/services/fund_service.dart';
 import 'package:asend/bank/services/account_service.dart';
 import 'package:asend/theme/app_theme.dart';
