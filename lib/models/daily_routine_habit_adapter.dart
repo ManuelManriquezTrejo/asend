@@ -1,6 +1,5 @@
 import 'package:hive/hive.dart';
-import 'DailyRoutineHabit.dart';
-
+import 'package:asend/models/daily_routine_habit.dart';
 class DailyRoutineHabitAdapter extends TypeAdapter<DailyRoutineHabit> {
   @override
   final int typeId = 6;

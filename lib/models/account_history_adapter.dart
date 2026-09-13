@@ -1,6 +1,5 @@
 import 'package:hive/hive.dart';
-import 'AccountHistory.dart';
-
+import 'package:asend/models/account_history.dart';
 class AccountHistoryAdapter extends TypeAdapter<AccountHistory> {
   @override
   final int typeId = 3;

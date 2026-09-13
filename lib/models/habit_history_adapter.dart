@@ -1,6 +1,5 @@
 import 'package:hive/hive.dart';
-import 'HabitHistory.dart';
-
+import 'package:asend/models/habit_history.dart';
 class HabitHistoryAdapter extends TypeAdapter<HabitHistory> {
   @override
   final int typeId = 7;
