@@ -236,9 +236,9 @@ class _EditRoutineHabitScreenState extends State<EditRoutineHabitScreen> {
     widget.habit.tipo = nuevo;
     widget.habit.valor = double.parse(valorTexto);
     widget.habit.minToKeepStreak = nuevo == 'nota' ? 9.0 : 1.0;
-    // El historial viejo se archivó: ambas rachas empiezan de cero
-    widget.habit.currentStreak = 0;
-    widget.habit.maxStreak = 0;
+    // El historial viejo se archivó: recalculateStreak no encuentra
+    // registros activos y deja los cinco campos de racha en cero.
+    HabitHistoryService.recalculateStreak(widget.habit);
     await HabitHistoryService.saveHabit(widget.habit);
     setState(() {});
     _aviso('Tipo cambiado a "$nuevo". Racha reiniciada.');
