@@ -26,11 +26,11 @@ class GymHiveService {
       Hive.registerAdapter(GymSessionLogAdapter());
 
       // 🧨 BORRAR DATOS - descomentar, correr UNA vez y volver a comentar
-      // await Hive.deleteBoxFromDisk(daysBox);
-      // await Hive.deleteBoxFromDisk(exercisesBox);
-      // await Hive.deleteBoxFromDisk(changesBox);
-      // await Hive.deleteBoxFromDisk(setsBox);
-      // await Hive.deleteBoxFromDisk(logsBox);
+       //await Hive.deleteBoxFromDisk(daysBox);
+       //await Hive.deleteBoxFromDisk(exercisesBox);
+       //await Hive.deleteBoxFromDisk(changesBox);
+       //await Hive.deleteBoxFromDisk(setsBox);
+       //await Hive.deleteBoxFromDisk(logsBox);
 
       await Hive.openBox<GymDay>(daysBox);
       await Hive.openBox<GymExercise>(exercisesBox);
