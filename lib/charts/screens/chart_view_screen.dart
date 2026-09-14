@@ -26,6 +26,9 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
 
   /// Claves de las líneas apagadas. Todas arrancan encendidas.
   final Set<String> _ocultas = {};
+    /// Clave de la línea resaltada, o null si ninguna lo está.
+  /// La resaltada se dibuja gruesa y las demás se atenúan.
+  String? _resaltada;
 
   /// Valor del eje Y donde está el dedo, para elegir el punto más
   /// cercano en vez del más alto del día.
@@ -111,13 +114,29 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
   }
 
   Widget _contenido() {
+    final resaltada = _resaltada == null
+        ? null
+        : _lineas.firstWhere((l) => l.clave == _resaltada);
+
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: Text(
-            '${_fechaCorta(_rango!.start)} — ${_fechaCorta(_rango!.end)}',
-            style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
+            resaltada == null
+                ? '${_fechaCorta(_rango!.start)} — ${_fechaCorta(_rango!.end)}'
+                : resaltada.nombre,
+            style: TextStyle(
+              color: resaltada == null
+                  ? AppTheme.textGrey
+                  : ChartService.getColor(
+                      resaltada.clave,
+                      _lineas.indexOf(resaltada),
+                    ),
+              fontSize: 13,
+              fontWeight:
+                  resaltada == null ? FontWeight.normal : FontWeight.bold,
+            ),
           ),
         ),
         Expanded(
@@ -145,12 +164,13 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
     );
   }
 
-  /// Una fila por línea: casilla para encenderla, su nombre, y un
-  /// cuadro a la derecha para cambiarle el color.
+  /// Una fila por línea: casilla para encenderla, su nombre para
+  /// resaltarla en la gráfica, y un cuadro para cambiarle el color.
   Widget _filaLinea(int i) {
     final linea = _lineas[i];
     final color = ChartService.getColor(linea.clave, i);
     final encendida = !_ocultas.contains(linea.clave);
+    final resaltada = _resaltada == linea.clave;
 
     return Row(
       children: [
@@ -159,6 +179,8 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
           onChanged: (_) => setState(() {
             if (encendida) {
               _ocultas.add(linea.clave);
+              // Apagarla también quita el resaltado
+              if (resaltada) _resaltada = null;
             } else {
               _ocultas.remove(linea.clave);
             }
@@ -170,12 +192,26 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
           ),
         ),
         Expanded(
-          child: Text(
-            linea.nombre,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: encendida ? AppTheme.textWhite : AppTheme.textHint,
-              fontSize: 13,
+          child: InkWell(
+            onTap: encendida
+                ? () => setState(() {
+                    _resaltada = resaltada ? null : linea.clave;
+                  })
+                : null,
+            borderRadius: BorderRadius.circular(4),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Text(
+                linea.nombre,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: !encendida
+                      ? AppTheme.textHint
+                      : (resaltada ? color : AppTheme.textWhite),
+                  fontSize: 13,
+                  fontWeight: resaltada ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
             ),
           ),
         ),
@@ -224,13 +260,19 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
       maxX: _totalDias.toDouble(),
       lineBarsData: _visibles.map((e) {
         final linea = e.value;
+        final color = ChartService.getColor(linea.clave, e.key);
+        final esResaltada = _resaltada == linea.clave;
+        final hayResaltada = _resaltada != null;
 
         return LineChartBarData(
           spots: linea.puntos
               .map((p) => FlSpot(_aX(p.fecha), p.valor))
               .toList(),
-          color: ChartService.getColor(linea.clave, e.key),
-          barWidth: 2,
+          // Con una resaltada, las demás se atenúan para que destaque
+          color: hayResaltada && !esResaltada
+              ? color.withValues(alpha: 0.2)
+              : color,
+          barWidth: esResaltada ? 4 : 2,
           isCurved: false,
           dotData: const FlDotData(show: false),
         );

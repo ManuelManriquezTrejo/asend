@@ -82,6 +82,23 @@ class GymService {
     await box.put(nuevoId, dia);
     return dia;
   }
+    /// Cambia el nombre de un día. Los snapshots del historial
+  /// conservan el nombre que tenían, no se tocan.
+  static Future<void> renombrarDia(GymDay dia, String nombre) async {
+    dia.nombre = nombre.trim();
+    await GymHiveService.getDaysBox().put(dia.id, dia);
+  }
+
+  /// Deja los días en el orden de la lista que se le pase y
+  /// recompacta el campo orden a 1, 2, 3, sin huecos.
+  static Future<void> reordenarDias(List<GymDay> dias) async {
+    final box = GymHiveService.getDaysBox();
+
+    for (var i = 0; i < dias.length; i++) {
+      dias[i].orden = i + 1;
+      await box.put(dias[i].id, dias[i]);
+    }
+  }
 
   /// Soft delete. Conserva el historial; descarta la sesión en curso.
   static Future<void> eliminarDia(GymDay dia) async {

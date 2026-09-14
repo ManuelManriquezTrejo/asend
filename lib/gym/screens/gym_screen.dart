@@ -91,6 +91,69 @@ class _GymScreenState extends State<GymScreen> {
 
     if (mounted) setState(() {});
   }
+  // ── Renombrar día ──────────────────────────────────────
+
+  Future<void> _renombrarDia(GymDay dia) async {
+    final controlador = TextEditingController(text: dia.nombre);
+    String? error;
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text(
+            'Cambiar nombre',
+            style: TextStyle(color: AppTheme.textWhite),
+          ),
+          content: TextField(
+            controller: controlador,
+            autofocus: true,
+            textCapitalization: TextCapitalization.sentences,
+            style: const TextStyle(color: AppTheme.textWhite),
+            decoration: InputDecoration(
+              hintText: 'A Bíceps, Pierna, Push...',
+              errorText: error,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: AppTheme.textGrey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final nombre = controlador.text.trim();
+
+                if (nombre.isEmpty) {
+                  setDialogState(() => error = 'Escribe un nombre');
+                  return;
+                }
+                // exceptoId deja que conserve su propio nombre
+                if (GymService.existeNombreDia(nombre, exceptoId: dia.id)) {
+                  setDialogState(() => error = 'Ya existe ese día');
+                  return;
+                }
+
+                final navigator = Navigator.of(context);
+                await GymService.renombrarDia(dia, nombre);
+                navigator.pop();
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    await Future.delayed(const Duration(milliseconds: 300));
+    controlador.dispose();
+
+    if (mounted) setState(() {});
+  }
+
 
   // ── Eliminar día ───────────────────────────────────────
 
@@ -464,9 +527,21 @@ class _GymScreenState extends State<GymScreen> {
           Expanded(
             child: dias.isEmpty
                 ? _vacio()
-                : ListView(
+                : ReorderableListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                    children: dias.map(_tarjetaDia).toList(),
+                    itemCount: dias.length,
+                    itemBuilder: (context, i) => _tarjetaDia(dias[i], i),
+                    onReorder: (desde, hasta) async {
+                      // Al mover hacia abajo, quitar el día primero
+                      // recorre las posiciones siguientes
+                      if (hasta > desde) hasta--;
+
+                      final movido = dias.removeAt(desde);
+                      dias.insert(hasta, movido);
+
+                      await GymService.reordenarDias(dias);
+                      if (mounted) setState(() {});
+                    },
                   ),
           ),
           _barraInferior(),
@@ -491,12 +566,14 @@ class _GymScreenState extends State<GymScreen> {
     );
   }
 
-  Widget _tarjetaDia(GymDay dia) {
+  Widget _tarjetaDia(GymDay dia, int indice) {
     final enCurso = GymService.estaEnCurso(dia.id);
     final ejercicios = GymService.getEjercicios(dia.id).length;
     final fecha = GymService.getFechaSesion(dia.id);
 
     return Padding(
+      // La lista necesita una llave para saber qué tarjeta movió
+      key: ValueKey(dia.id),
       padding: const EdgeInsets.only(bottom: 12),
       child: Material(
         color: AppTheme.bgDarkGrey,
@@ -511,6 +588,17 @@ class _GymScreenState extends State<GymScreen> {
           ),
         ),
         child: ListTile(
+          leading: ReorderableDragStartListener(
+            index: indice,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+              child: Icon(
+                Icons.drag_indicator,
+                color: AppTheme.textHint,
+                size: 22,
+              ),
+            ),
+          ),
           title: Text(
             dia.nombre,
             style: TextStyle(
@@ -529,9 +617,32 @@ class _GymScreenState extends State<GymScreen> {
             ),
           ),
           onTap: () => _abrirSesion(dia),
-          trailing: IconButton(
+          trailing: PopupMenuButton<String>(
             icon: const Icon(Icons.edit, color: AppTheme.textHint, size: 20),
-            onPressed: () => _abrirEjercicios(dia),
+            color: AppTheme.bgDarkGrey,
+            onSelected: (opcion) {
+              if (opcion == 'nombre') {
+                _renombrarDia(dia);
+              } else {
+                _abrirEjercicios(dia);
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'nombre',
+                child: Text(
+                  'Cambiar nombre',
+                  style: TextStyle(color: AppTheme.textWhite),
+                ),
+              ),
+              PopupMenuItem(
+                value: 'ejercicios',
+                child: Text(
+                  'Ejercicios',
+                  style: TextStyle(color: AppTheme.textWhite),
+                ),
+              ),
+            ],
           ),
         ),
       ),
