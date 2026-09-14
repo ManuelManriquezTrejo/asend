@@ -58,6 +58,22 @@ class AccountService {
     return null;
   }
 
+    /// Cuenta por ID, incluyendo las eliminadas.
+  /// Solo para mostrar: el historial de compras necesita el nombre
+  /// de la cuenta aunque ya se haya borrado de Banco.
+  /// Nunca usar esto para mover dinero.
+  static Account? getAccountByIdIncluyendoEliminadas(int id) {
+    var box = Hive.box(boxName);
+    final value = box.get(id);
+    return value is Account ? value : null;
+  }
+
+  /// Nombre de una cuenta para mostrar en pantalla.
+  /// Devuelve "Cuenta eliminada" si el id ya no existe en la caja.
+  static String getAccountName(int id) {
+    return getAccountByIdIncluyendoEliminadas(id)?.name ?? 'Cuenta eliminada';
+  }
+
   // Actualizar el saldo de una cuenta
   static Future<void> updateAccountBalance({
     required int accountId,

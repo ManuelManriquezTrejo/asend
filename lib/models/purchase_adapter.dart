@@ -16,20 +16,16 @@ class PurchaseAdapter extends TypeAdapter<Purchase> {
     final tieneNota = reader.readBool();
     final nota = tieneNota ? reader.readString() : null;
 
+    final accountId = reader.readInt();
     final fechaMs = reader.readInt();
-
-    final tieneDeletedAt = reader.readBool();
-    final deletedAtMs = tieneDeletedAt ? reader.readInt() : 0;
 
     return Purchase(
       id: id,
       nombre: nombre,
       precio: precio,
       nota: nota,
+      accountId: accountId,
       fecha: DateTime.fromMillisecondsSinceEpoch(fechaMs),
-      deletedAt: tieneDeletedAt
-          ? DateTime.fromMillisecondsSinceEpoch(deletedAtMs)
-          : null,
     );
   }
 
@@ -44,11 +40,7 @@ class PurchaseAdapter extends TypeAdapter<Purchase> {
       writer.writeString(obj.nota!);
     }
 
+    writer.writeInt(obj.accountId);
     writer.writeInt(obj.fecha.millisecondsSinceEpoch);
-
-    writer.writeBool(obj.deletedAt != null);
-    if (obj.deletedAt != null) {
-      writer.writeInt(obj.deletedAt!.millisecondsSinceEpoch);
-    }
   }
 }

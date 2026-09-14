@@ -13,6 +13,7 @@ class StoreHiveService {
       // await Hive.deleteBoxFromDisk(purchasesBox);
 
       await Hive.openBox<Purchase>(purchasesBox);
+      await Hive.openBox(storeMetaBox);
 
       print('✅ Store Hive inicializado');
     } catch (e) {
@@ -21,6 +22,21 @@ class StoreHiveService {
   }
 
   static Box<Purchase> getPurchasesBox() => Hive.box<Purchase>(purchasesBox);
+
+  /// Caja aparte para el último id usado.
+  /// Vive separada porque purchasesBox está tipada como Box<Purchase>
+  /// y no acepta guardar un int suelto.
+  static const String storeMetaBox = 'store_meta';
+  static const String _lastIdKey = 'lastPurchaseId';
+
+  /// Siguiente id de compra. Nunca se recicla, aunque se borren compras.
+  static Future<int> nextPurchaseId() async {
+    final box = Hive.box(storeMetaBox);
+    final ultimo = box.get(_lastIdKey, defaultValue: 0) as int;
+    final nuevo = ultimo + 1;
+    await box.put(_lastIdKey, nuevo);
+    return nuevo;
+  }
 
   /// Ver todos los datos de Tienda
   static void printAllData() {
@@ -41,20 +57,15 @@ class StoreHiveService {
 
       int totalGastado = 0;
       for (final p in compras) {
-        print(
-          '  ${p.deletedAt == null ? "🛍" : "🗑"} '
-          '─────────────────────────',
-        );
+        print('  🛍 ─────────────────────────');
         print('     id        : ${p.id}');
         print('     nombre    : ${p.nombre}');
         print('     precio    : ${p.precio}');
         print('     nota      : ${p.nota ?? "—"}');
+        print('     cuentaId  : ${p.accountId}');
         print('     fecha     : ${f(p.fecha)}');
-        print('     deletedAt : ${f(p.deletedAt)}');
 
-        if (p.deletedAt == null) {
-          totalGastado += p.precio;
-        }
+        totalGastado += p.precio;
       }
       print('\n  💸 TOTAL GASTADO (histórico): $totalGastado');
     }
