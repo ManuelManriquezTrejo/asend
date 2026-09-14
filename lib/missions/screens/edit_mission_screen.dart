@@ -36,8 +36,8 @@ class _EditMissionScreenState extends State<EditMissionScreen> {
     final controller = TextEditingController(text: valorActual);
     String error = '';
 
-    return showDialog<String>(
-      context: context,
+    final resultado = await showDialog<String>(
+            context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: Text(
@@ -93,6 +93,11 @@ class _EditMissionScreenState extends State<EditMissionScreen> {
         ),
       ),
     );
+
+   await Future.delayed(const Duration(milliseconds: 300));
+    controller.dispose();
+
+    return resultado;
   }
 
   Future<void> _editarNombre() async {
@@ -175,11 +180,12 @@ class _EditMissionScreenState extends State<EditMissionScreen> {
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.bgDarkGrey,
+      child: Material(
+        color: AppTheme.bgDarkGrey,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
+          side: BorderSide(
             color: AppTheme.buttonPurple.withValues(alpha: 0.3),
           ),
         ),

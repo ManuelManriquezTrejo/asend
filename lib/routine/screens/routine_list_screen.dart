@@ -89,11 +89,12 @@ class _RoutineListScreenState extends State<RoutineListScreen> {
                       final habit = habits[index];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.bgDarkGrey,
+                        child: Material(
+                          color: AppTheme.bgDarkGrey,
+                          clipBehavior: Clip.antiAlias,
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
+                            side: BorderSide(
                               color: AppTheme.buttonPurple.withValues(
                                 alpha: 0.3,
                               ),

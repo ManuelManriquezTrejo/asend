@@ -30,10 +30,10 @@ class _GoalsScreenState extends State<GoalsScreen> {
   Future<String?> _pedirTexto({
     required String titulo,
     required String etiqueta,
-  }) {
+  }) async {
     final controller = TextEditingController();
 
-    return showDialog<String>(
+    final resultado = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(titulo, style: const TextStyle(color: AppTheme.textWhite)),
@@ -68,13 +68,20 @@ class _GoalsScreenState extends State<GoalsScreen> {
         ],
       ),
     );
+
+    // El TextField sigue usando el controlador durante la animación
+    // de cierre; liberarlo antes rompe el árbol de widgets
+    await Future.delayed(const Duration(milliseconds: 300));
+    controller.dispose();
+
+    return resultado;
   }
 
-  /// Diálogo de monto entero. Devuelve el número o null si cancela.
-  Future<int?> _pedirMonto({required String titulo, String? ayuda}) {
+  /// Diálogo de monto entero. Devuelve el número o null si cancela.  Future<int?> _pedirMonto({required String titulo, String? ayuda}) {
+  Future<int?> _pedirMonto({required String titulo, String? ayuda}) async {
     final controller = TextEditingController();
 
-    return showDialog<int>(
+    final resultado = await showDialog<int>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(titulo, style: const TextStyle(color: AppTheme.textWhite)),
@@ -124,6 +131,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
         ],
       ),
     );
+
+    // El TextField sigue usando el controlador durante la animación
+    // de cierre; liberarlo antes rompe el árbol de widgets
+    await Future.delayed(const Duration(milliseconds: 300));
+    controller.dispose();
+
+    return resultado;
   }
 
   // ─────────────────────────────────────────────
@@ -411,11 +425,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     children: metas.map((m) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.bgDarkGrey,
+                        child: Material(
+                          color: AppTheme.bgDarkGrey,
+                          clipBehavior: Clip.antiAlias,
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
+                            side: BorderSide(
                               color: AppTheme.buttonPurple.withValues(
                                 alpha: 0.3,
                               ),

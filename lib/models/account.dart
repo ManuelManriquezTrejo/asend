@@ -1,10 +1,9 @@
 class Account {
   final int id;
-  final String name;
-  final double balance;
+  String name;
+  double balance;
   final DateTime createdAt;
-  final DateTime? deletedAt; //fecha de eliminación (null = activo)
-
+  DateTime? deletedAt; //fecha de eliminación (null = activo)
   Account({
     required this.id,
     required this.name,

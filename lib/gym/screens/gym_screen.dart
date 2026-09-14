@@ -498,11 +498,12 @@ class _GymScreenState extends State<GymScreen> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.bgDarkGrey,
+      child: Material(
+        color: AppTheme.bgDarkGrey,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
+          side: BorderSide(
             color: enCurso
                 ? AppTheme.buttonPurple
                 : AppTheme.disabled.withValues(alpha: 0.3),

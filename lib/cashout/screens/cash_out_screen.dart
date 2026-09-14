@@ -256,11 +256,12 @@ class _CashOutScreenState extends State<CashOutScreen> {
                       final p = pendientes[i];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.bgDarkGrey,
+                        child: Material(
+                          color: AppTheme.bgDarkGrey,
+                          clipBehavior: Clip.antiAlias,
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
+                            side: BorderSide(
                               color: AppTheme.buttonPurple.withValues(
                                 alpha: 0.3,
                               ),

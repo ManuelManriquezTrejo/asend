@@ -147,11 +147,8 @@ class HabitHistoryService {
         DateTime current = getLogicalDay(h.createdAt);
 
         while (current.isBefore(today)) {
-          final exists = historyBox.values.any(
-            (r) =>
-                r.habitId == h.id &&
-                r.recordDate.isAtSameMomentAs(current) &&
-                r.deletedAt == null,
+      final exists = historyBox.values.any(
+            (r) => r.habitId == h.id && r.recordDate.isAtSameMomentAs(current),
           );
 
           if (!exists) {
@@ -207,110 +204,43 @@ class HabitHistoryService {
     }
   }
 
-  /// Recalcular rachas de un hábito recorriendo TODO su historial.
-  ///
-  /// Se evalúa cada día contra el minToKeepStreak vigente, así que al subir
-  /// el mínimo los récords viejos que ya no calificarían bajan solos.
-  ///
-  /// Actualiza cinco campos: currentStreak, maxStreak, secondMaxStreak,
-  /// maxStreakStartDate y maxStreakEndDate.
+  /// Recalcular racha de un hábito
   static void recalculateStreak(DailyRoutineHabit habit) {
     try {
       final records = getHabitRecords(habit.id);
-
       if (records.isEmpty) {
         habit.currentStreak = 0;
-        habit.maxStreak = 0;
-        habit.secondMaxStreak = 0;
-        habit.maxStreakStartDate = null;
-        habit.maxStreakEndDate = null;
-        print('🔄 Rachas de ${habit.nombre}: sin registros, todo en 0');
         return;
       }
 
-      // Más antiguo primero
-      records.sort((a, b) => a.recordDate.compareTo(b.recordDate));
+      // Más reciente primero
+      records.sort((a, b) => b.recordDate.compareTo(a.recordDate));
 
-      // Todas las rachas del historial, no solo la que llega hasta hoy.
-      final rachas = <_Racha>[];
-
-      int largo = 0;
-      DateTime? inicio;
-      DateTime? anterior;
+      int streak = 0;
+      DateTime? lastDate;
 
       for (final record in records) {
-        final cuenta = record.value >= habit.minToKeepStreak;
-        final continua =
-            anterior != null &&
-            record.recordDate.isAtSameMomentAs(
-              anterior.add(const Duration(days: 1)),
-            );
+        if (record.value < habit.minToKeepStreak) break;
 
-        if (cuenta && continua && largo > 0) {
-          largo++;
-        } else {
-          // Se cierra la racha anterior antes de mover 'anterior',
-          // así 'anterior' todavía es el último día que sí contó.
-          if (largo > 0) {
-            rachas.add(_Racha(largo, inicio!, anterior!));
-          }
-          largo = cuenta ? 1 : 0;
-          inicio = cuenta ? record.recordDate : null;
+        // Verificar continuidad de días
+        if (lastDate != null) {
+          final expected = lastDate.subtract(const Duration(days: 1));
+          if (!record.recordDate.isAtSameMomentAs(expected)) break;
         }
 
-        anterior = record.recordDate;
+        streak++;
+        lastDate = record.recordDate;
       }
 
-      // La racha que sigue abierta al terminar el recorrido.
-      if (largo > 0) {
-        rachas.add(_Racha(largo, inicio!, anterior!));
+      habit.currentStreak = streak;
+
+      if (streak > habit.maxStreak) {
+        habit.maxStreak = streak;
       }
 
-      // Racha actual: la que termina en el último día registrado.
-      final ultimaFecha = records.last.recordDate;
-      habit.currentStreak = 0;
-      for (final r in rachas) {
-        if (r.fin.isAtSameMomentAs(ultimaFecha)) {
-          habit.currentStreak = r.largo;
-          break;
-        }
-      }
-
-      if (rachas.isEmpty) {
-        habit.maxStreak = 0;
-        habit.secondMaxStreak = 0;
-        habit.maxStreakStartDate = null;
-        habit.maxStreakEndDate = null;
-      } else {
-        // Más larga primero; si empatan, gana la más reciente.
-        rachas.sort((a, b) {
-          final porLargo = b.largo.compareTo(a.largo);
-          if (porLargo != 0) return porLargo;
-          return b.fin.compareTo(a.fin);
-        });
-
-        habit.maxStreak = rachas.first.largo;
-        habit.maxStreakStartDate = rachas.first.inicio;
-        habit.maxStreakEndDate = rachas.first.fin;
-        habit.secondMaxStreak = rachas.length > 1 ? rachas[1].largo : 0;
-      }
-
-      print(
-        '🔄 Rachas de ${habit.nombre}: actual ${habit.currentStreak}, '
-        'récord ${habit.maxStreak}, segundo ${habit.secondMaxStreak}',
-      );
+      print('🔄 Racha recalculada para ${habit.nombre}: $streak días');
     } catch (e) {
       print('❌ Error al recalcular racha: $e');
     }
   }
-}
-
-/// Un tramo de días seguidos que cumplieron el mínimo. Solo vive dentro
-/// de recalculateStreak, no se guarda en Hive.
-class _Racha {
-  final int largo;
-  final DateTime inicio;
-  final DateTime fin;
-
-  _Racha(this.largo, this.inicio, this.fin);
 }

@@ -337,11 +337,12 @@ class _BodyScreenState extends State<BodyScreen> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.bgDarkGrey,
+      child: Material(
+        color: AppTheme.bgDarkGrey,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
+          side: BorderSide(
             color: medidaHoy
                 ? AppTheme.success.withValues(alpha: 0.5)
                 : AppTheme.buttonPurple.withValues(alpha: 0.3),

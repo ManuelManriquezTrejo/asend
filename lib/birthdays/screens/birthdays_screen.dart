@@ -97,10 +97,10 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
     String inicial = '',
     bool permitirVacio = false,
     int maxLineas = 1,
-  }) {
+  }) async {
     final controller = TextEditingController(text: inicial);
 
-    return showDialog<String>(
+    final resultado = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(titulo, style: const TextStyle(color: AppTheme.textWhite)),
@@ -136,6 +136,13 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
         ],
       ),
     );
+
+    // El TextField sigue usando el controlador durante la animación
+    // de cierre; liberarlo antes rompe el árbol de widgets
+    await Future.delayed(const Duration(milliseconds: 300));
+    controller.dispose();
+
+    return resultado;
   }
 
   /// Calendario para elegir día y mes. El año que salga se ignora.
@@ -162,8 +169,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
   }
 
   /// Rueda de años con la edad calculada al lado, actualizándose al girar.
-  Future<int?> _pedirAnio(Birthday persona) {
-    final anioMax = DateTime.now().year;
+  Future<int?> _pedirAnio(Birthday persona) async {    final anioMax = DateTime.now().year;
     const anioMin = 1920;
 
     // Arranca en el año registrado, o en 2000 si no tiene
@@ -173,7 +179,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
       initialItem: seleccionado - anioMin,
     );
 
-    return showDialog<int>(
+    final resultado = await showDialog<int>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
@@ -279,8 +285,14 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
         },
       ),
     );
-  }
 
+    // La rueda sigue usando el controlador durante la animación
+    // de cierre; liberarlo antes rompe el árbol de widgets
+    await Future.delayed(const Duration(milliseconds: 300));
+    controller.dispose();
+
+    return resultado;
+  }
   // ─────────────────────────────────────────────
   // ACCIONES
   // ─────────────────────────────────────────────

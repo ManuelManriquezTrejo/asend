@@ -1,6 +1,7 @@
 import 'package:asend/database/birthday_hive_service.dart';
 import 'package:asend/database/body_hive_service.dart';
 import 'package:asend/database/cash_out_hive_service.dart';
+import 'package:asend/database/chart_hive_service.dart';
 import 'package:asend/database/goal_hive_service.dart';
 import 'package:asend/database/gym_hive_service.dart';
 import 'package:asend/database/hive_service.dart';
@@ -16,6 +17,7 @@ import 'package:asend/routine/services/habit_history_service.dart';
 import 'package:asend/routine/widgets/habit_completion_dialogs.dart';
 import 'package:asend/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +49,9 @@ void main() async {
   // Inicializar Hive de Gym
   await GymHiveService.initializeGymHive();
 
+    // Inicializar Hive de Gráficas
+  await ChartHiveService.initializeChartHive();
+
   // Ver datos en consola
   HiveService.printAllData();
   RoutineHiveService.printAllData();
@@ -57,6 +62,14 @@ void main() async {
   BirthdayHiveService.printAllData();
   BodyHiveService.printAllData();
   GymHiveService.printAllData();
+  ChartHiveService.printAllData();
+
+  // Asend es de uso vertical: bloquear la rotación evita
+  // los overflow de las pantallas al acostar el teléfono
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // Ejecutar la app
   runApp(const MyApp());
@@ -185,11 +198,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppTheme.bgDarkGrey,
+                            child: Material(
+                              color: AppTheme.bgDarkGrey,
+                              clipBehavior: Clip.antiAlias,
+                              shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
+                                side: BorderSide(
                                   color: AppTheme.buttonPurple.withValues(
                                     alpha: 0.3,
                                   ),
@@ -301,11 +315,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ...incompleteHabits.map((habit) {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppTheme.bgDarkGrey,
+                            child: Material(
+                              color: AppTheme.bgDarkGrey,
+                              clipBehavior: Clip.antiAlias,
+                              shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
+                                side: BorderSide(
                                   color: AppTheme.buttonPurple.withValues(
                                     alpha: 0.3,
                                   ),

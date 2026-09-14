@@ -29,7 +29,7 @@ class _StoreScreenState extends State<StoreScreen> {
   Future<({String nombre, int precio, String? nota})?> _formulario({
     required String titulo,
     Purchase? compra,
-  }) {
+  }) async {
     final nombreCtrl = TextEditingController(text: compra?.nombre ?? '');
     final precioCtrl = TextEditingController(
       text: compra == null ? '' : '${compra.precio}',
@@ -38,7 +38,8 @@ class _StoreScreenState extends State<StoreScreen> {
 
     final saldo = PurchaseService.getSaldoCuenta();
 
-    return showDialog<({String nombre, int precio, String? nota})>(
+    final resultado =
+        await showDialog<({String nombre, int precio, String? nota})>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(titulo, style: const TextStyle(color: AppTheme.textWhite)),
@@ -120,6 +121,15 @@ class _StoreScreenState extends State<StoreScreen> {
         ],
       ),
     );
+
+    // Los TextField siguen usando los controladores durante la animación
+    // de cierre; liberarlos antes rompe el árbol de widgets
+    await Future.delayed(const Duration(milliseconds: 300));
+    nombreCtrl.dispose();
+    precioCtrl.dispose();
+    notaCtrl.dispose();
+
+    return resultado;
   }
 
   Future<void> _agregarCompra() async {
@@ -186,11 +196,12 @@ class _StoreScreenState extends State<StoreScreen> {
                     children: compras.map((c) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.bgDarkGrey,
+                        child: Material(
+                          color: AppTheme.bgDarkGrey,
+                          clipBehavior: Clip.antiAlias,
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
+                            side: BorderSide(
                               color: AppTheme.buttonPurple.withValues(
                                 alpha: 0.3,
                               ),

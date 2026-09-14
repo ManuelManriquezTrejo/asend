@@ -24,8 +24,8 @@ class _EditRoutineHabitScreenState extends State<EditRoutineHabitScreen> {
     final controller = TextEditingController(text: valorActual);
     String error = '';
 
-    return showDialog<String>(
-      context: context,
+    final resultado = await showDialog<String>(
+            context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: Text(
@@ -87,6 +87,11 @@ class _EditRoutineHabitScreenState extends State<EditRoutineHabitScreen> {
         ),
       ),
     );
+
+    await Future.delayed(const Duration(milliseconds: 300));
+    controller.dispose();
+
+    return resultado;
   }
 
   void _aviso(String texto) {
@@ -255,24 +260,30 @@ class _EditRoutineHabitScreenState extends State<EditRoutineHabitScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.bgDarkGrey,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: AppTheme.buttonPurple.withValues(alpha: 0.3),
           ),
         ),
-        child: ListTile(
-          leading: Icon(icono, color: AppTheme.buttonPurple),
-          title: Text(
-            titulo,
-            style: const TextStyle(color: AppTheme.textWhite, fontSize: 14),
+        // El color va aquí y no en el Container: ListTile pinta su fondo
+        // y el efecto de toque sobre el Material más cercano, y un
+        // DecoratedBox con color en medio los taparía.
+        child: Material(
+          color: AppTheme.bgDarkGrey,
+          borderRadius: BorderRadius.circular(8),
+          child: ListTile(
+            leading: Icon(icono, color: AppTheme.buttonPurple),
+            title: Text(
+              titulo,
+              style: const TextStyle(color: AppTheme.textWhite, fontSize: 14),
+            ),
+            subtitle: Text(
+              actual,
+              style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
+            ),
+            trailing: const Icon(Icons.chevron_right, color: AppTheme.textHint),
+            onTap: onTap,
           ),
-          subtitle: Text(
-            actual,
-            style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
-          ),
-          trailing: const Icon(Icons.chevron_right, color: AppTheme.textHint),
-          onTap: onTap,
         ),
       ),
     );

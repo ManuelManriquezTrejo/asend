@@ -67,15 +67,8 @@ class AccountService {
     Account? account = box.get(accountId);
 
     if (account != null) {
-      Account updatedAccount = Account(
-        id: account.id,
-        name: account.name,
-        balance: newBalance,
-        createdAt: account.createdAt,
-        deletedAt: account.deletedAt, // Mantener el deletedAt si existe
-      );
-
-      await box.put(accountId, updatedAccount);
+      account.balance = newBalance;
+      await box.put(accountId, account);
     }
   }
 
@@ -85,15 +78,8 @@ class AccountService {
     Account? account = box.get(accountId);
 
     if (account != null) {
-      Account deletedAccount = Account(
-        id: account.id,
-        name: account.name,
-        balance: account.balance,
-        createdAt: account.createdAt,
-        deletedAt: DateTime.now(), // ← Marca como eliminado
-      );
-
-      await box.put(accountId, deletedAccount);
+      account.deletedAt = DateTime.now(); // ← Marca como eliminado
+      await box.put(accountId, account);
     }
   }
 
@@ -116,16 +102,9 @@ class AccountService {
     // No se permite dejar la cuenta en negativo
     if (saldoDespues < 0) return false;
 
-    await box.put(
-      accountId,
-      Account(
-        id: account.id,
-        name: account.name,
-        balance: saldoDespues,
-        createdAt: account.createdAt,
-        deletedAt: account.deletedAt,
-      ),
-    );
+    // El objeto solo se modifica después de pasar la validación de arriba.
+    account.balance = saldoDespues;
+    await box.put(accountId, account);
 
     // Registrar el movimiento para auditoría
     final histBox = HiveService.getAccountHistoryBox();

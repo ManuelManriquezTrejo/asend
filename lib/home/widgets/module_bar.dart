@@ -1,6 +1,7 @@
 import 'package:asend/bank/screens/bank_screen.dart';
 import 'package:asend/birthdays/screens/birthdays_screen.dart';
 import 'package:asend/body/screens/body_screen.dart';
+import 'package:asend/charts/screens/charts_menu_screen.dart';
 import 'package:asend/cashout/screens/cash_out_screen.dart';
 import 'package:asend/goals/screens/goals_screen.dart';
 import 'package:asend/gym/screens/gym_screen.dart';
@@ -42,6 +43,7 @@ final List<_Seccion> _secciones = [
     _Opcion(Icons.map, 'Misiones', () => const MissionBoardScreen()),
   ]),
   _Seccion(Icons.insights, 'Datos', [
+    _Opcion(Icons.show_chart, 'Gráficas', () => const ChartsMenuScreen()),
     _Opcion(Icons.fitness_center, 'Gym', () => const GymScreen()),
     _Opcion(Icons.straighten, 'Medidas', () => const BodyScreen()),
     _Opcion(Icons.cake, 'Cumpleaños', () => const BirthdaysScreen()),
