@@ -53,13 +53,14 @@ void main() async {
   await ChartHiveService.initializeChartHive();
 
   // Ver datos en consola
+  HiveService.printFondos();
   HiveService.printAllData();
-  RoutineHiveService.printAllData();
-  MissionHiveService.printAllData();
+  //RoutineHiveService.printAllData();
+  //MissionHiveService.printAllData();
   CashOutHiveService.printAllData();
   GoalHiveService.printAllData();
   StoreHiveService.printAllData();
-  BirthdayHiveService.printAllData();
+  //BirthdayHiveService.printAllData();
   BodyHiveService.printAllData();
   GymHiveService.printAllData();
   ChartHiveService.printAllData();

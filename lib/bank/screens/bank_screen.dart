@@ -1,4 +1,6 @@
 import 'package:asend/bank/screens/select_fund_screen.dart';
+import 'package:asend/bank/screens/withdraw_screen.dart';
+import 'package:asend/bank/screens/movement_history_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:asend/bank/services/account_service.dart';
 import 'package:asend/bank/screens/add_account_screen.dart';
@@ -33,6 +35,36 @@ class _BankScreenState extends State<BankScreen> {
           trailing: Text('Saldo: \$${account.balance.toStringAsFixed(2)}'),
         );
       },
+    );
+  }
+
+  /// Botón redondo de solo icono para la barra de acciones.
+  Widget _botonIcono({
+    required IconData icono,
+    required VoidCallback onPressed,
+    required String tooltip,
+    Color color = AppTheme.buttonPurple,
+    double tamano = 52,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: SizedBox(
+        width: tamano,
+        height: tamano,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: color,
+            shape: const CircleBorder(),
+            padding: EdgeInsets.zero,
+          ),
+          child: Icon(
+            icono,
+            color: AppTheme.textWhite,
+            size: tamano * 0.45,
+          ),
+        ),
+      ),
     );
   }
 
@@ -185,58 +217,88 @@ class _BankScreenState extends State<BankScreen> {
           ),
           // Lista de cuentas
           Expanded(child: _buildAccountsList()),
-          // Botones: "Agregar Fondos", "Agregar Cuenta" y "Eliminar Cuenta"
+          // Acciones: fondos y retirar a la izquierda, historial al centro,
+          // cuentas a la derecha
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Botón "Agregar Fondos"
-                Flexible(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) =>
-                            SelectFundScreen(onFundAdded: _refreshAccounts),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.buttonPurple,
+                // Columna izquierda: agregar fondos y retirar
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _botonIcono(
+                      icono: Icons.savings,
+                      tooltip: 'Agregar fondos',
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) =>
+                              SelectFundScreen(onFundAdded: _refreshAccounts),
+                        );
+                      },
                     ),
-                    child: const Text('Agregar Fondos'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                // Botón "Agregar Cuenta"
-                Flexible(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddAccountScreen(
-                            onAccountAdded: _refreshAccounts,
+                    const SizedBox(height: 12),
+                    _botonIcono(
+                      icono: Icons.arrow_outward,
+                      tooltip: 'Retirar',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => WithdrawScreen(
+                              onWithdrawn: _refreshAccounts,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.buttonPurple,
+                        );
+                      },
                     ),
-                    child: const Text('Agregar Cuenta'),
-                  ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                // Botón "Eliminar Cuenta"
-                Flexible(
-                  child: ElevatedButton(
-                    onPressed: () => _showDeleteAccountDialog(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.danger,
+
+                // Centro: historial, más grande
+                _botonIcono(
+                  icono: Icons.receipt_long,
+                  tooltip: 'Historial de movimientos',
+                  tamano: 70,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MovementHistoryScreen(),
+                      ),
+                    );
+                  },
+                ),
+
+                // Columna derecha: agregar y eliminar cuenta
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _botonIcono(
+                      icono: Icons.account_balance_wallet,
+                      tooltip: 'Agregar cuenta',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddAccountScreen(
+                              onAccountAdded: _refreshAccounts,
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                    child: const Text('Eliminar Cuenta'),
-                  ),
+                    const SizedBox(height: 12),
+                    _botonIcono(
+                      icono: Icons.delete,
+                      tooltip: 'Eliminar cuenta',
+                      color: AppTheme.danger,
+                      onPressed: () => _showDeleteAccountDialog(),
+                    ),
+                  ],
                 ),
               ],
             ),

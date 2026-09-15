@@ -150,7 +150,7 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
                           MaterialPageRoute(
                             builder: (context) => AddAmountToFundScreen(
                               fund: fund,
-                              onAmountAdded: _refreshFunds,
+                              onAmountAdded: widget.onFundAdded,
                             ),
                           ),
                         );

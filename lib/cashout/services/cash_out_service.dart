@@ -194,28 +194,82 @@ class CashOutService {
     return (ok: true, mensaje: 'Cobrado ${pago.cantidad}');
   }
 
-  /// Cobrar todos los pendientes. Se detiene al primer fallo.
+  /// Cobrar todos los pendientes en un solo movimiento por la suma.
+  /// O se cobra todo, o no se cobra nada: si el saldo no alcanza para
+  /// el total, no se toca ninguna cuenta.
   static Future<({int cobrados, String mensaje})> cobrarTodo() async {
     final pendientes = getPendientes();
     if (pendientes.isEmpty) {
       return (cobrados: 0, mensaje: 'No hay pagos pendientes');
     }
 
-    int cobrados = 0;
-    for (final p in pendientes) {
-      final r = await cobrar(p);
-      if (!r.ok) {
-        return (
-          cobrados: cobrados,
-          mensaje: cobrados == 0
-              ? r.mensaje
-              : 'Se cobraron $cobrados. Luego: ${r.mensaje}',
-        );
-      }
-      cobrados++;
+    final config = CashOutConfigService.getConfigSync();
+
+    if (config?.cuentaPagaId == null || config?.cuentaRecibeId == null) {
+      return (cobrados: 0, mensaje: 'Selecciona ambas cuentas primero');
     }
 
-    return (cobrados: cobrados, mensaje: 'Se cobraron $cobrados pagos');
+    final paga = AccountService.getAccountById(config!.cuentaPagaId!);
+    final recibe = AccountService.getAccountById(config.cuentaRecibeId!);
+
+    if (paga == null || recibe == null) {
+      return (cobrados: 0, mensaje: 'Alguna cuenta ya no existe');
+    }
+
+    if (paga.id == recibe.id) {
+      return (cobrados: 0, mensaje: 'Las cuentas deben ser distintas');
+    }
+
+    double total = 0;
+    for (final p in pendientes) {
+      total += p.cantidad.toDouble();
+    }
+
+    if (paga.balance < total) {
+      return (
+        cobrados: 0,
+        mensaje:
+            'Saldo insuficiente en ${paga.name} '
+            '(tiene ${paga.balance}, se necesitan $total)',
+      );
+    }
+
+    // Un solo pendiente conserva su nombre; varios se resumen
+    final resumen = pendientes.length == 1
+        ? pendientes.first.nombre
+        : '${pendientes.length} pagos';
+
+    final salida = await AccountService.aplicarMovimiento(
+      accountId: paga.id,
+      monto: -total,
+      concepto: 'Pago: $resumen',
+    );
+    if (!salida) {
+      return (cobrados: 0, mensaje: 'No se pudo descontar de ${paga.name}');
+    }
+
+    await AccountService.aplicarMovimiento(
+      accountId: recibe.id,
+      monto: total,
+      concepto: 'Cobro: $resumen',
+    );
+
+    final ahora = DateTime.now();
+    for (final p in pendientes) {
+      p.pagado = true;
+      p.pagadoAt = ahora;
+      await savePago(p);
+    }
+
+    print(
+      '💵 Cobrado en bloque: ${pendientes.length} pagos = $total '
+      '(${paga.name} → ${recibe.name})',
+    );
+
+    return (
+      cobrados: pendientes.length,
+      mensaje: 'Se cobraron ${pendientes.length} pagos',
+    );
   }
 
   /// Soft delete de un pago pendiente

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:asend/models/fund.dart';
 import 'package:asend/models/fund_account.dart';
-import 'package:asend/models/account.dart';
 import 'package:asend/bank/services/fund_service.dart';
 import 'package:asend/bank/services/account_service.dart';
 import 'package:asend/theme/app_theme.dart';
@@ -30,7 +29,6 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
   }
 
   void _addAmountToFund() async {
-    // Validar que no esté vacío
     if (amountController.text.isEmpty) {
       ScaffoldMessenger.of(
         context,
@@ -38,84 +36,105 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
       return;
     }
 
-    try {
-      double amount = double.parse(amountController.text);
+    final double? parsed = double.tryParse(amountController.text);
 
-      if (amount <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('La cantidad debe ser mayor a 0')),
-        );
-        return;
-      }
-
-      // Obtener las distribuciones de este fondo
-      List<FundAccount> distributions = FundService.getFundAccountsByFundId(
-        widget.fund.id,
-      );
-
-      // Distribuir el monto entre las cuentas según el porcentaje
-      for (FundAccount dist in distributions) {
-        double amountForAccount = amount * (dist.percentage / 100);
-
-        // Obtener la cuenta
-        Account? account = AccountService.getAccountById(dist.accountId);
-        if (account != null) {
-          // Actualizar el saldo de la cuenta
-          double newBalance = account.balance + amountForAccount;
-
-          // Guardar el cambio en la base de datos
-          await AccountService.updateAccountBalance(
-            accountId: dist.accountId,
-            newBalance: newBalance,
-          );
-        }
-      }
-
-      // Mostrar mensaje de éxito
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text(
-              '\$$amount agregados al fondo "${widget.fund.name}"',
-              style: const TextStyle(
-                color: AppTheme.textWhite,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: const Text(
-              'El dinero se ha distribuido correctamente entre las cuentas.',
-              style: TextStyle(color: AppTheme.textGrey),
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Cierra el diálogo
-                  Navigator.pop(context); // Cierra AddAmountToFundScreen
-                  Navigator.pop(context); // Cierra SelectFundScreen (modal)
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.buttonPurple,
-                ),
-                child: const Text(
-                  'Aceptar',
-                  style: TextStyle(color: AppTheme.textWhite),
-                ),
-              ),
-            ],
-          );
-        },
-      );
-
-      widget.onAmountAdded();
-    } catch (e) {
+    if (parsed == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(const SnackBar(content: Text('Ingresa un número válido')));
+      return;
     }
+
+    final double amount = parsed;
+
+    if (amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La cantidad debe ser mayor a 0')),
+      );
+      return;
+    }
+
+    // Obtener las distribuciones de este fondo
+    List<FundAccount> distributions = FundService.getFundAccountsByFundId(
+      widget.fund.id,
+    );
+
+    if (distributions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'El fondo "${widget.fund.name}" no tiene cuentas asignadas',
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Repartir según el porcentaje. Cada cuenta recibe su parte como un
+    // movimiento propio, para que el historial muestre un renglón por
+    // cuenta afectada.
+    int repartidas = 0;
+    for (FundAccount dist in distributions) {
+      double amountForAccount = amount * (dist.percentage / 100);
+      if (amountForAccount <= 0) continue;
+
+      final ok = await AccountService.aplicarMovimiento(
+        accountId: dist.accountId,
+        monto: amountForAccount, // entra
+        concepto: 'Abono: ${widget.fund.name}',
+        referenciaId: widget.fund.id,
+      );
+
+      if (ok) repartidas++;
+    }
+
+    if (!mounted) return;
+
+    if (repartidas == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo repartir: las cuentas del fondo ya no existen'),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            '\$$amount agregados al fondo "${widget.fund.name}"',
+            style: const TextStyle(
+              color: AppTheme.textWhite,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: const Text(
+            'El dinero se ha distribuido correctamente entre las cuentas.',
+            style: TextStyle(color: AppTheme.textGrey),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Cierra el diálogo
+                Navigator.pop(context); // Cierra AddAmountToFundScreen
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.buttonPurple,
+              ),
+              child: const Text(
+                'Aceptar',
+                style: TextStyle(color: AppTheme.textWhite),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    widget.onAmountAdded();
   }
 
   @override
@@ -127,7 +146,6 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Título
             Text(
               '¿Cuánto deseas agregar a "${widget.fund.name}"?',
               style: const TextStyle(
@@ -139,7 +157,6 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
             ),
             const SizedBox(height: 30),
 
-            // Campo de cantidad
             TextField(
               controller: amountController,
               keyboardType: TextInputType.number,
@@ -151,7 +168,6 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
             ),
             const SizedBox(height: 30),
 
-            // Botón Agregar
             ElevatedButton(
               onPressed: _addAmountToFund,
               style: ElevatedButton.styleFrom(

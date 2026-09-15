@@ -144,4 +144,28 @@ class AccountService {
 
     return true;
   }
+
+  /// Saca dinero de una cuenta desde el botón de retirar de Banco.
+  /// El concepto es el que eligió el usuario de su lista.
+  /// Devuelve null si salió bien, o el mensaje de error para la alerta.
+  static Future<String?> retirar({
+    required int accountId,
+    required double monto,
+    required String concepto,
+  }) async {
+    if (monto <= 0) return 'El monto debe ser mayor a 0';
+
+    final cuenta = getAccountById(accountId);
+    if (cuenta == null) return 'Esa cuenta ya no existe';
+
+    final ok = await aplicarMovimiento(
+      accountId: accountId,
+      monto: -monto, // sale
+      concepto: 'Retiro: $concepto',
+    );
+
+    if (!ok) return 'Saldo insuficiente en la cuenta';
+
+    return null;
+  }
 }

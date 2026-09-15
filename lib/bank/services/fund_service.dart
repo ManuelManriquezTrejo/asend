@@ -6,17 +6,24 @@ class FundService {
   static const String fundsBoxName = 'funds';
   static const String fundAccountsBoxName = 'fund_accounts';
 
+  /// Siguiente ID libre de una caja: uno más que la llave entera más alta.
+  /// Contar por longitud repite IDs cuando alguna llave ya fue borrada.
+  static int _siguienteId(Box box) {
+    int nuevo = 1;
+    for (final key in box.keys) {
+      if (key is int && key >= nuevo) nuevo = key + 1;
+    }
+    return nuevo;
+  }
+
   // Agregar un nuevo fondo
   static Future<void> addFund({required String name}) async {
     var fundsBox = Hive.box(fundsBoxName);
 
-    // El ID es el índice + 1
-    int newId = fundsBox.length + 1;
+    int newId = _siguienteId(fundsBox);
 
-    // Crear objeto Fund
     Fund fund = Fund(id: newId, name: name, createdAt: DateTime.now());
 
-    // Guardar en Hive usando el ID como key
     await fundsBox.put(newId, fund);
   }
 
@@ -24,25 +31,24 @@ class FundService {
   static List<Fund> getAllFunds() {
     var fundsBox = Hive.box(fundsBoxName);
 
-    if (fundsBox.isEmpty) {
-      return [];
-    }
-
-    List<Fund> funds = [];
-    for (int i = 1; i <= fundsBox.length; i++) {
-      var fund = fundsBox.get(i);
-      // Solo mostrar si NO está eliminado
-      if (fund != null && fund.deletedAt == null) {
-        funds.add(fund);
+    // Iterar sobre los valores reales, no de 1 a length.
+    // Con un hueco en las llaves, el bucle por índice deja fuera
+    // todo lo que está después del hueco.
+    final funds = <Fund>[];
+    for (final value in fundsBox.values) {
+      if (value is Fund && value.deletedAt == null) {
+        funds.add(value);
       }
     }
+    funds.sort((a, b) => a.id.compareTo(b.id));
     return funds;
   }
 
   // Obtener un fondo por ID
   static Fund? getFundById(int id) {
     var fundsBox = Hive.box(fundsBoxName);
-    return fundsBox.get(id);
+    final value = fundsBox.get(id);
+    return value is Fund ? value : null;
   }
 
   // Agregar una relación fondo-cuenta con porcentaje
@@ -53,10 +59,8 @@ class FundService {
   }) async {
     var fundAccountsBox = Hive.box(fundAccountsBoxName);
 
-    // El ID es el índice + 1
-    int newId = fundAccountsBox.length + 1;
+    int newId = _siguienteId(fundAccountsBox);
 
-    // Crear objeto FundAccount
     FundAccount fundAccount = FundAccount(
       id: newId,
       fundId: fundId,
@@ -64,7 +68,6 @@ class FundService {
       percentage: percentage,
     );
 
-    // Guardar en Hive
     await fundAccountsBox.put(newId, fundAccount);
   }
 
@@ -72,17 +75,13 @@ class FundService {
   static List<FundAccount> getFundAccountsByFundId(int fundId) {
     var fundAccountsBox = Hive.box(fundAccountsBoxName);
 
-    if (fundAccountsBox.isEmpty) {
-      return [];
-    }
-
-    List<FundAccount> fundAccounts = [];
-    for (int i = 1; i <= fundAccountsBox.length; i++) {
-      var fundAccount = fundAccountsBox.get(i);
-      if (fundAccount != null && fundAccount.fundId == fundId) {
-        fundAccounts.add(fundAccount);
+    final fundAccounts = <FundAccount>[];
+    for (final value in fundAccountsBox.values) {
+      if (value is FundAccount && value.fundId == fundId) {
+        fundAccounts.add(value);
       }
     }
+    fundAccounts.sort((a, b) => a.id.compareTo(b.id));
     return fundAccounts;
   }
 
@@ -95,22 +94,8 @@ class FundService {
     //   {'accountId': 2, 'percentage': 50.0},
     // ]
   }) async {
-    var fundAccountsBox = Hive.box(fundAccountsBoxName);
+    await _borrarRelacionesDeFondo(fundId);
 
-    // Borrar las relaciones antiguas de este fondo
-    List<int> keysToDelete = [];
-    for (int i = 1; i <= fundAccountsBox.length; i++) {
-      var fundAccount = fundAccountsBox.get(i);
-      if (fundAccount != null && fundAccount.fundId == fundId) {
-        keysToDelete.add(i);
-      }
-    }
-
-    for (int key in keysToDelete) {
-      await fundAccountsBox.delete(key);
-    }
-
-    // Agregar las nuevas relaciones
     for (var item in accountPercentages) {
       await addFundAccount(
         fundId: fundId,
@@ -120,20 +105,41 @@ class FundService {
     }
   }
 
+  /// Borra de la caja las relaciones fondo-cuenta de un fondo.
+  /// Recorre las llaves reales para no depender del orden ni de la longitud.
+  static Future<void> _borrarRelacionesDeFondo(int fundId) async {
+    var fundAccountsBox = Hive.box(fundAccountsBoxName);
+
+    final llaves = <dynamic>[];
+    for (final key in fundAccountsBox.keys) {
+      final value = fundAccountsBox.get(key);
+      if (value is FundAccount && value.fundId == fundId) {
+        llaves.add(key);
+      }
+    }
+
+    for (final key in llaves) {
+      await fundAccountsBox.delete(key);
+    }
+  }
+
   // Marcar un fondo como eliminado (soft delete)
   static Future<void> deleteFund(int fundId) async {
     var fundsBox = Hive.box(fundsBoxName);
-    Fund? fund = fundsBox.get(fundId);
+    final value = fundsBox.get(fundId);
 
-    if (fund != null) {
+    if (value is Fund) {
       Fund deletedFund = Fund(
-        id: fund.id,
-        name: fund.name,
-        createdAt: fund.createdAt,
+        id: value.id,
+        name: value.name,
+        createdAt: value.createdAt,
         deletedAt: DateTime.now(), // ← Marca como eliminado
       );
 
       await fundsBox.put(fundId, deletedFund);
+
+      // El fondo ya no se usa, sus porcentajes tampoco
+      await _borrarRelacionesDeFondo(fundId);
     }
   }
 }
