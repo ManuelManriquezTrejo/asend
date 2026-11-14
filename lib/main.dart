@@ -49,7 +49,7 @@ void main() async {
   // Inicializar Hive de Gym
   await GymHiveService.initializeGymHive();
 
-    // Inicializar Hive de Gráficas
+  // Inicializar Hive de Gráficas
   await ChartHiveService.initializeChartHive();
 
   // Ver datos en consola
@@ -82,6 +82,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Asend',
       theme: AppTheme.darkTheme,
       home: const HomeScreen(),

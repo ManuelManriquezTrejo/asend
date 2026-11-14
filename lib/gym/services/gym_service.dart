@@ -245,7 +245,16 @@ class GymService {
       await box.put(lista[i].id, lista[i]);
     }
   }
+  /// Deja los ejercicios en el orden de la lista que se le pase y
+  /// recompacta el campo orden a 1, 2, 3, sin huecos.
+  static Future<void> reordenarEjercicios(List<GymExercise> ejercicios) async {
+    final box = GymHiveService.getExercisesBox();
 
+    for (var i = 0; i < ejercicios.length; i++) {
+      ejercicios[i].orden = i + 1;
+      await box.put(ejercicios[i].id, ejercicios[i]);
+    }
+  }
   /// Soft delete. Conserva historial y cambios.
   /// Borra sus series de la sesión en curso, si las hay.
   static Future<void> eliminarEjercicio(GymExercise ejercicio) async {

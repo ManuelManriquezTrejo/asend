@@ -378,9 +378,21 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
           Expanded(
             child: ejercicios.isEmpty
                 ? _vacio()
-                : ListView(
+                : ReorderableListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    children: ejercicios.map(_tarjeta).toList(),
+                    itemCount: ejercicios.length,
+                    itemBuilder: (context, i) => _tarjeta(ejercicios[i], i),
+                    onReorder: (desde, hasta) async {
+                      // Al mover hacia abajo, quitar el ejercicio primero
+                      // recorre las posiciones siguientes
+                      if (hasta > desde) hasta--;
+
+                      final movido = ejercicios.removeAt(desde);
+                      ejercicios.insert(hasta, movido);
+
+                      await GymService.reordenarEjercicios(ejercicios);
+                      if (mounted) setState(() {});
+                    },
                   ),
           ),
           Padding(
@@ -439,8 +451,10 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
     );
   }
 
-  Widget _tarjeta(GymExercise ejercicio) {
+  Widget _tarjeta(GymExercise ejercicio, int indice) {
     return Padding(
+      // La lista necesita una llave para saber qué tarjeta se movió
+      key: ValueKey(ejercicio.id),
       padding: const EdgeInsets.only(bottom: 12),
       child: Material(
         color: AppTheme.bgDarkGrey,
@@ -452,17 +466,34 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
           ),
         ),
         child: ListTile(
-          leading: CircleAvatar(
-            radius: 14,
-            backgroundColor: AppTheme.buttonPurple,
-            child: Text(
-              '${ejercicio.orden}',
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
+          leading: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ReorderableDragStartListener(
+                index: indice,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                  child: Icon(
+                    Icons.drag_indicator,
+                    color: AppTheme.textHint,
+                    size: 22,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 6),
+              CircleAvatar(
+                radius: 14,
+                backgroundColor: AppTheme.buttonPurple,
+                child: Text(
+                  '${ejercicio.orden}',
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
           title: Text(
             ejercicio.nombre,

@@ -1,4 +1,5 @@
 import 'package:asend/body/screens/add_measurement_screen.dart';
+import 'package:asend/body/screens/body_zone_history_screen.dart';
 import 'package:asend/body/services/body_service.dart';
 import 'package:asend/models/body_zone.dart';
 import 'package:asend/theme/app_theme.dart';
@@ -25,6 +26,7 @@ class _BodyScreenState extends State<BodyScreen> {
     final controlador = TextEditingController(text: zona?.nombre ?? '');
     String unidad = zona?.unidad ?? BodyService.unidades.first;
     String? error;
+        bool abrirHistorial = false;
 
     await showDialog(
       context: context,
@@ -81,6 +83,30 @@ class _BodyScreenState extends State<BodyScreen> {
                       );
                     }).toList(),
                   ),
+                  // Las mediciones solo existen en una zona ya creada
+                  if (!esNueva) ...[
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          abrirHistorial = true;
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(
+                          Icons.history,
+                          color: AppTheme.buttonPurple,
+                        ),
+                        label: const Text(
+                          'Medidas',
+                          style: TextStyle(color: AppTheme.buttonPurple),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppTheme.buttonPurple),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
               actions: [
@@ -132,7 +158,14 @@ class _BodyScreenState extends State<BodyScreen> {
         );
       },
     );
-
+    if (abrirHistorial && zona != null && mounted) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BodyZoneHistoryScreen(zona: zona),
+        ),
+      );
+    }
     // El TextField sigue usando el controlador durante la animación
     // de cierre; liberarlo antes rompe el árbol de widgets
     await Future.delayed(const Duration(milliseconds: 300));

@@ -188,7 +188,22 @@ class BodyService {
 
     await box.put(nuevoId, medicion);
   }
+  /// Corrige el valor de una medición de cualquier fecha.
+  /// Su fecha y la unidad con que se registró no cambian.
+  static Future<void> corregirMedicion(
+    BodyMeasurement medicion,
+    double valor,
+  ) async {
+    medicion.valor = valor;
+    await BodyHiveService.getMeasurementsBox().put(medicion.id, medicion);
+  }
 
+  /// Soft delete: la medición desaparece del historial y de las
+  /// gráficas, pero el registro se conserva en Hive.
+  static Future<void> eliminarMedicion(BodyMeasurement medicion) async {
+    medicion.deletedAt = DateTime.now();
+    await BodyHiveService.getMeasurementsBox().put(medicion.id, medicion);
+  }
   /// Valida lo que el usuario escribió.
   /// Devuelve el error a mostrar, o null si el valor sirve.
   static String? validarValor(String texto) {
