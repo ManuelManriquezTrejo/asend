@@ -4,8 +4,11 @@ import 'package:asend/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class BirthdaysScreen extends StatefulWidget {
-  const BirthdaysScreen({super.key});
+  /// Persona cuyo menú de editar se abre al entrar, cuando se llega
+  /// desde el inicio tocando su cumpleaños. Sin ella, abre normal.
+  final Birthday? editarPersona;
 
+  const BirthdaysScreen({super.key, this.editarPersona});
   @override
   State<BirthdaysScreen> createState() => _BirthdaysScreenState();
 }
@@ -26,7 +29,18 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
     'Nov',
     'Dic',
   ];
+  @override
+  void initState() {
+    super.initState();
 
+    // El menú de editar se abre cuando la pantalla ya se dibujó
+    final persona = widget.editarPersona;
+    if (persona != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _editar(directa: persona);
+      });
+    }
+  }
   void _aviso(String mensaje, {bool esError = true}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -318,14 +332,16 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
     _aviso('$nombre agregado', esError: false);
   }
 
-  Future<void> _editar() async {
-    final personas = BirthdayService.getAlfabetico();
-    if (personas.isEmpty) {
+  /// Con [directa] va directo al menú de esa persona.
+  /// Sin ella, primero pide elegir a quién editar.
+  Future<void> _editar({Birthday? directa}) async {
+    if (directa == null && BirthdayService.getAlfabetico().isEmpty) {
       _aviso('No hay cumpleaños registrados');
       return;
     }
 
-    final persona = await _elegirPersona('¿A quién quieres editar?');
+    final persona =
+        directa ?? await _elegirPersona('¿A quién quieres editar?');
     if (persona == null || !mounted) return;
 
     final campo = await showDialog<String>(
