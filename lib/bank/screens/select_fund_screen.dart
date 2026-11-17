@@ -3,7 +3,10 @@ import 'package:asend/bank/services/fund_service.dart';
 import 'package:asend/models/fund.dart';
 import 'package:asend/bank/screens/add_fund_name_screen.dart';
 import 'package:asend/bank/screens/add_amount_to_fund_screen.dart';
+import 'package:asend/bank/screens/select_accounts_for_fund_screen.dart';
+import 'package:asend/bank/services/account_service.dart';
 import 'package:asend/theme/app_theme.dart';
+import 'package:asend/theme/notification_dot.dart';
 
 class SelectFundScreen extends StatefulWidget {
   final Function onFundAdded;
@@ -23,7 +26,76 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
       });
     }
   }
+  /// Un fondo que reparte a cuentas eliminadas no deja abonar.
+  /// Ofrece modificarlo (cuentas y porcentajes) o eliminarlo.
+  Future<void> _avisoFondoConProblema(Fund fund) async {
+    final eliminadas = FundService.getCuentasEliminadas(fund.id)
+        .map((fa) => AccountService.getAccountName(fa.accountId))
+        .join(', ');
 
+    final opcion = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Revisa "${fund.name}"',
+          style: const TextStyle(color: AppTheme.textWhite),
+        ),
+        content: Text(
+          'Este fondo reparte a cuentas que ya no existen: $eliminadas.\n\n'
+          'Para poder abonarle, modifica sus cuentas y porcentajes, '
+          'o elimínalo.',
+          style: const TextStyle(color: AppTheme.textGrey),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: AppTheme.textGrey),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'eliminar'),
+            child: const Text(
+              'Eliminar fondo',
+              style: TextStyle(color: AppTheme.danger),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, 'modificar'),
+            child: const Text('Modificar fondo'),
+          ),
+        ],
+      ),
+    );
+
+    if (opcion == null || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
+    if (opcion == 'eliminar') {
+      await FundService.deleteFund(fund.id);
+      _refreshFunds();
+      widget.onFundAdded();
+      messenger.showSnackBar(
+        SnackBar(content: Text('Fondo "${fund.name}" eliminado')),
+      );
+      return;
+    }
+
+    // Modificar: se cierra la lista de fondos y se abre la de cuentas
+    navigator.pop();
+    navigator.push(
+      MaterialPageRoute(
+        builder: (context) => SelectAccountsForFundScreen(
+          fundName: fund.name,
+          fundId: fund.id,
+          onFundAdded: widget.onFundAdded,
+        ),
+      ),
+    );
+  }
   void _showDeleteFundDialog() {
     List<Fund> funds = FundService.getAllFunds();
 
@@ -134,16 +206,39 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
                   itemCount: funds.length,
                   itemBuilder: (context, index) {
                     Fund fund = funds[index];
+                    final conProblema = FundService.tieneCuentaEliminada(
+                      fund.id,
+                    );
+
                     return ListTile(
                       title: Text(
                         fund.name,
                         style: const TextStyle(color: AppTheme.textWhite),
                       ),
-                      trailing: const Icon(
-                        Icons.arrow_forward,
-                        color: AppTheme.buttonPurple,
+                      subtitle: conProblema
+                          ? const Text(
+                              'Tiene cuentas eliminadas',
+                              style: TextStyle(
+                                color: AppTheme.danger,
+                                fontSize: 12,
+                              ),
+                            )
+                          : null,
+                      trailing: NotificationDot(
+                        visible: conProblema,
+                        child: const Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Icon(
+                            Icons.arrow_forward,
+                            color: AppTheme.buttonPurple,
+                          ),
+                        ),
                       ),
                       onTap: () {
+                        if (conProblema) {
+                          _avisoFondoConProblema(fund);
+                          return;
+                        }
                         Navigator.pop(context); // Cierra el modal
                         Navigator.push(
                           context,

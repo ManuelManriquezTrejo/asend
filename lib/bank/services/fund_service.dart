@@ -1,4 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:asend/bank/services/account_service.dart';
 import 'package:asend/models/fund.dart';
 import 'package:asend/models/fund_account.dart';
 
@@ -86,6 +87,22 @@ class FundService {
   }
 
   // Actualizar los porcentajes de un fondo (reemplaza los antiguos)
+    /// Relaciones del fondo que apuntan a cuentas ya eliminadas de Banco.
+  /// Abonar a ese fondo perdería esa parte del dinero.
+  static List<FundAccount> getCuentasEliminadas(int fundId) {
+    return getFundAccountsByFundId(fundId)
+        .where((fa) => AccountService.getAccountById(fa.accountId) == null)
+        .toList();
+  }
+
+  /// True si el fondo reparte a alguna cuenta eliminada.
+  static bool tieneCuentaEliminada(int fundId) =>
+      getCuentasEliminadas(fundId).isNotEmpty;
+
+  /// True si algún fondo activo necesita revisión. Enciende el punto
+  /// rojo del botón de Fondos.
+  static bool hayFondosConProblema() =>
+      getAllFunds().any((f) => tieneCuentaEliminada(f.id));
   static Future<void> updateFundAccountPercentages({
     required int fundId,
     required List<Map<String, dynamic>> accountPercentages,

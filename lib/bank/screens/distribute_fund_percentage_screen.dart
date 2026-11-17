@@ -11,11 +11,16 @@ class DistributeFundPercentageScreen extends StatefulWidget {
   final List<int> selectedAccountIds;
   final Function onFundAdded;
 
+  /// Con un id, guarda los porcentajes en ese fondo en lugar de
+  /// crear uno nuevo.
+  final int? fundId;
+
   const DistributeFundPercentageScreen({
     super.key,
     required this.fundName,
     required this.selectedAccountIds,
     required this.onFundAdded,
+    this.fundId,
   });
 
   @override
@@ -37,6 +42,31 @@ class _DistributeFundPercentageScreenState
     for (int accountId in widget.selectedAccountIds) {
       percentages[accountId] = 0.1;
       controllers[accountId] = TextEditingController(text: '0.1');
+    }
+
+    if (widget.fundId != null) _cargarPorcentajesActuales();
+  }
+
+  /// Al modificar un fondo, arranca con los porcentajes que ya tenían
+  /// sus cuentas. Las cuentas nuevas empiezan en 0.1, y lo que dejaron
+  /// las cuentas eliminadas queda como saldo restante por repartir.
+  void _cargarPorcentajesActuales() {
+    for (final fa in FundService.getFundAccountsByFundId(widget.fundId!)) {
+      if (percentages.containsKey(fa.accountId)) {
+        percentages[fa.accountId] = fa.percentage;
+      }
+    }
+
+    // Si al sumar las cuentas nuevas se pasa de 100, se quita el
+    // excedente a la cuenta con más porcentaje
+    final total = percentages.values.fold<double>(0, (s, v) => s + v);
+    if (total > 100) {
+      final mayor = _getAccountWithMaxPercentage();
+      percentages[mayor] = percentages[mayor]! - (total - 100);
+    }
+
+    for (final id in widget.selectedAccountIds) {
+      controllers[id]!.text = percentages[id]!.toStringAsFixed(1);
     }
   }
 
@@ -236,6 +266,11 @@ class _DistributeFundPercentageScreenState
   // Guardar el fondo
   void _saveFund() async {
     try {
+      if (widget.fundId != null) {
+        await _guardarCambios();
+        return;
+      }
+
       // Crear el fondo
       await FundService.addFund(name: widget.fundName);
 
@@ -312,7 +347,31 @@ class _DistributeFundPercentageScreenState
       ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
+  /// Reemplaza las cuentas y porcentajes de un fondo existente.
+  /// El fondo conserva su id y su nombre.
+  Future<void> _guardarCambios() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
 
+    await FundService.updateFundAccountPercentages(
+      fundId: widget.fundId!,
+      accountPercentages: widget.selectedAccountIds
+          .map(
+            (id) => {'accountId': id, 'percentage': percentages[id] ?? 0.1},
+          )
+          .toList(),
+    );
+
+    widget.onFundAdded();
+
+    // Cerrar esta pantalla y la de elegir cuentas
+    navigator.pop();
+    navigator.pop();
+
+    messenger.showSnackBar(
+      SnackBar(content: Text('Fondo "${widget.fundName}" actualizado')),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     double remaining = _getRemaining();

@@ -1,23 +1,31 @@
 import 'package:asend/bank/screens/bank_screen.dart';
+import 'package:asend/bank/services/fund_service.dart';
 import 'package:asend/birthdays/screens/birthdays_screen.dart';
 import 'package:asend/body/screens/body_screen.dart';
 import 'package:asend/charts/screens/charts_menu_screen.dart';
 import 'package:asend/cashout/screens/cash_out_screen.dart';
+import 'package:asend/cashout/services/cash_out_config_service.dart';
 import 'package:asend/goals/screens/goals_screen.dart';
 import 'package:asend/gym/screens/gym_screen.dart';
 import 'package:asend/missions/screens/mission_board_screen.dart';
 import 'package:asend/routine/screens/routine_list_screen.dart';
 import 'package:asend/store/screens/store_screen.dart';
 import 'package:asend/theme/app_theme.dart';
+import 'package:asend/theme/notification_dot.dart';
 import 'package:flutter/material.dart';
 
 /// Un módulo dentro del menú. Sin [destino] = en mantenimiento.
+/// [aviso] devuelve true cuando el módulo necesita revisión y debe
+/// mostrar el punto rojo.
 class _Opcion {
   final IconData icono;
   final String etiqueta;
   final Widget Function()? destino;
+  final bool Function()? aviso;
 
-  const _Opcion(this.icono, this.etiqueta, [this.destino]);
+  const _Opcion(this.icono, this.etiqueta, [this.destino, this.aviso]);
+
+  bool get tieneAviso => aviso?.call() ?? false;
 }
 
 /// Un círculo del main con los módulos que despliega.
@@ -27,14 +35,27 @@ class _Seccion {
   final List<_Opcion> opciones;
 
   const _Seccion(this.icono, this.etiqueta, this.opciones);
+
+  /// El círculo lleva punto rojo si alguno de sus módulos lo lleva.
+  bool get tieneAviso => opciones.any((o) => o.tieneAviso);
 }
 
 /// Secciones de izquierda a derecha.
 /// Los módulos de cada una van de arriba hacia abajo.
 final List<_Seccion> _secciones = [
   _Seccion(Icons.account_balance_wallet, 'Economía', [
-    _Opcion(Icons.account_balance, 'Banco', () => const BankScreen()),
-    _Opcion(Icons.payments, 'Pagos', () => const CashOutScreen()),
+    _Opcion(
+      Icons.account_balance,
+      'Banco',
+      () => const BankScreen(),
+      FundService.hayFondosConProblema,
+    ),
+    _Opcion(
+      Icons.payments,
+      'Pagos',
+      () => const CashOutScreen(),
+      CashOutConfigService.tieneCuentaEliminada,
+    ),
     _Opcion(Icons.shopping_basket, 'Tienda', () => const StoreScreen()),
     _Opcion(Icons.savings, 'Metas', () => const GoalsScreen()),
   ]),
@@ -179,6 +200,7 @@ class _Barra extends StatelessWidget {
                   etiqueta: seccion.etiqueta,
                   activo: estaAbierta,
                   apagado: abierta != null && !estaAbierta,
+                  aviso: seccion.tieneAviso,
                   onTap: () => onTocarSeccion(i),
                 ),
               ],
@@ -214,6 +236,7 @@ class _Barra extends StatelessWidget {
             tamano: 48,
             enMenu: true,
             enMantenimiento: opcion.destino == null,
+            aviso: opcion.tieneAviso,
             onTap: () => onTocarOpcion?.call(opcion),
           ),
         ),
@@ -232,6 +255,7 @@ class _Circulo extends StatelessWidget {
   final bool apagado; // Otra sección está abierta: se ve tenue
   final bool enMantenimiento;
   final bool enMenu; // Etiqueta más clara sobre el fondo oscuro
+  final bool aviso; // Algo dentro necesita revisión: punto rojo
 
   const _Circulo({
     required this.icono,
@@ -242,6 +266,7 @@ class _Circulo extends StatelessWidget {
     this.apagado = false,
     this.enMantenimiento = false,
     this.enMenu = false,
+    this.aviso = false,
   });
 
   @override
@@ -255,20 +280,27 @@ class _Circulo extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Material(
-            color: enMantenimiento ? AppTheme.disabled : AppTheme.buttonPurple,
-            shape: CircleBorder(
-              side: activo
-                  ? const BorderSide(color: AppTheme.textWhite, width: 2)
-                  : BorderSide.none,
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onTap,
-              child: SizedBox(
-                width: tamano,
-                height: tamano,
-                child: Icon(icono, color: Colors.black, size: tamano * 0.46),
+          // Punto rojo si algo dentro necesita revisión
+          NotificationDot(
+            visible: aviso,
+            tamano: 14,
+            child: Material(
+              color: enMantenimiento
+                  ? AppTheme.disabled
+                  : AppTheme.buttonPurple,
+              shape: CircleBorder(
+                side: activo
+                    ? const BorderSide(color: AppTheme.textWhite, width: 2)
+                    : BorderSide.none,
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: onTap,
+                child: SizedBox(
+                  width: tamano,
+                  height: tamano,
+                  child: Icon(icono, color: Colors.black, size: tamano * 0.46),
+                ),
               ),
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:asend/bank/services/account_service.dart';
+import 'package:asend/bank/services/fund_service.dart';
 import 'package:asend/bank/screens/add_account_screen.dart';
 import 'package:asend/models/account.dart';
 import 'package:asend/bank/screens/distribute_fund_percentage_screen.dart';
@@ -9,10 +10,14 @@ class SelectAccountsForFundScreen extends StatefulWidget {
   final String fundName;
   final Function onFundAdded;
 
+  /// Con un id, modifica ese fondo en lugar de crear uno nuevo.
+  final int? fundId;
+
   const SelectAccountsForFundScreen({
     super.key,
     required this.fundName,
     required this.onFundAdded,
+    this.fundId,
   });
 
   @override
@@ -24,6 +29,20 @@ class _SelectAccountsForFundScreenState
     extends State<SelectAccountsForFundScreen> {
   // Lista para guardar los IDs de las cuentas seleccionadas
   List<int> selectedAccountIds = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Al modificar un fondo, marcar las cuentas que ya tiene y siguen
+    // activas. Las eliminadas se quedan fuera.
+    if (widget.fundId != null) {
+      selectedAccountIds = FundService.getFundAccountsByFundId(widget.fundId!)
+          .map((fa) => fa.accountId)
+          .where((id) => AccountService.getAccountById(id) != null)
+          .toList();
+    }
+  }
 
   // Función para refrescar la pantalla cuando se agrega una nueva cuenta
   void _refreshAccounts() {
@@ -50,6 +69,7 @@ class _SelectAccountsForFundScreenState
           fundName: widget.fundName,
           selectedAccountIds: selectedAccountIds,
           onFundAdded: widget.onFundAdded,
+          fundId: widget.fundId,
         ),
       ),
     );

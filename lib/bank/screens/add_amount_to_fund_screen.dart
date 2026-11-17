@@ -53,7 +53,18 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
       );
       return;
     }
-
+    // Un fondo con cuentas eliminadas perdería esa parte del dinero
+    if (FundService.tieneCuentaEliminada(widget.fund.id)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Este fondo tiene cuentas eliminadas. '
+            'Modifícalo o elimínalo antes de abonar',
+          ),
+        ),
+      );
+      return;
+    }
     // Obtener las distribuciones de este fondo
     List<FundAccount> distributions = FundService.getFundAccountsByFundId(
       widget.fund.id,

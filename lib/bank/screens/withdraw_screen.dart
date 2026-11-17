@@ -11,7 +11,15 @@ import 'package:asend/theme/app_theme.dart';
 class WithdrawScreen extends StatefulWidget {
   final Function onWithdrawn;
 
-  const WithdrawScreen({super.key, required this.onWithdrawn});
+  /// Cuenta que aparece ya elegida, cuando se entra desde el lápiz
+  /// de una cuenta. Sin ella, el usuario la escoge de la lista.
+  final int? cuentaInicialId;
+
+  const WithdrawScreen({
+    super.key,
+    required this.onWithdrawn,
+    this.cuentaInicialId,
+  });
 
   @override
   State<WithdrawScreen> createState() => _WithdrawScreenState();
@@ -48,6 +56,11 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
       _cuentas = AccountService.getAllAccounts();
       _conceptos = WithdrawConceptService.getAll();
       _cargando = false;
+
+      // Preseleccionar la cuenta solo si sigue activa
+      if (_cuentas.any((a) => a.id == widget.cuentaInicialId)) {
+        _cuentaId = widget.cuentaInicialId;
+      }
     });
   }
 

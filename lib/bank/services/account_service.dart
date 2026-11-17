@@ -98,7 +98,25 @@ class AccountService {
       await box.put(accountId, account);
     }
   }
+  /// True si el saldo es 0. Los repartos por porcentaje pueden dejar
+  /// fracciones menores a medio centavo, que en pantalla ya se ven
+  /// como \$0.00; esas también cuentan como 0.
+  static bool estaEnCero(Account cuenta) => cuenta.balance.abs() < 0.005;
 
+  /// Elimina una cuenta solo si su saldo es 0, para que el dinero
+  /// nunca desaparezca sin quedar en el historial.
+  /// Devuelve null si salió bien, o el mensaje de error.
+  static Future<String?> eliminarCuenta(int accountId) async {
+    final cuenta = getAccountById(accountId);
+    if (cuenta == null) return 'Esa cuenta ya no existe';
+
+    if (!estaEnCero(cuenta)) {
+      return 'Deja la cuenta en \$0 antes de eliminarla';
+    }
+
+    await deleteAccount(accountId);
+    return null;
+  }
   /// Mueve dinero en una cuenta y registra el movimiento.
   /// monto positivo = entra, negativo = sale.
   /// Devuelve false si no hay saldo suficiente (no modifica nada).
@@ -144,7 +162,101 @@ class AccountService {
 
     return true;
   }
+  /// Cambia el nombre de una cuenta. Los movimientos guardan solo el id
+  /// de la cuenta, así que el historial muestra el nombre nuevo sin que
+  /// cambie ningún monto. Devuelve null si salió bien, o el error.
+  static Future<String?> renombrar({
+    required int accountId,
+    required String nombre,
+  }) async {
+    final limpio = nombre.trim();
+    if (limpio.isEmpty) return 'Escribe un nombre';
 
+    final cuenta = getAccountById(accountId);
+    if (cuenta == null) return 'Esa cuenta ya no existe';
+
+    final repetido = getAllAccounts().any(
+      (a) =>
+          a.id != accountId &&
+          a.name.trim().toLowerCase() == limpio.toLowerCase(),
+    );
+    if (repetido) return 'Ya existe una cuenta con ese nombre';
+
+    cuenta.name = limpio;
+    await Hive.box(boxName).put(accountId, cuenta);
+    return null;
+  }
+
+  /// Mete dinero directo a una cuenta, sin pasar por un fondo.
+  /// En el historial aparece como "Ingreso", con el concepto si se escribió.
+  /// Devuelve null si salió bien, o el mensaje de error.
+  static Future<String?> ingresar({
+    required int accountId,
+    required double monto,
+    String? concepto,
+  }) async {
+    if (monto <= 0) return 'El monto debe ser mayor a 0';
+
+    final cuenta = getAccountById(accountId);
+    if (cuenta == null) return 'Esa cuenta ya no existe';
+
+    final texto = concepto?.trim() ?? '';
+
+    final ok = await aplicarMovimiento(
+      accountId: accountId,
+      monto: monto, // entra
+      concepto: texto.isEmpty ? 'Ingreso' : 'Ingreso: $texto',
+    );
+
+    return ok ? null : 'No se pudo registrar el ingreso';
+  }
+
+  /// Pasa dinero de una cuenta a otra. Primero se descuenta del origen;
+  /// si no alcanza el saldo, no se mueve nada. Solo si el descuento sale
+  /// bien se abona al destino. Cada movimiento guarda en referenciaId
+  /// la otra cuenta. Devuelve null si salió bien, o el mensaje de error.
+  static Future<String?> transferir({
+    required int origenId,
+    required int destinoId,
+    required double monto,
+    String? concepto,
+  }) async {
+    if (monto <= 0) return 'El monto debe ser mayor a 0';
+    if (origenId == destinoId) return 'Elige dos cuentas distintas';
+
+    final origen = getAccountById(origenId);
+    final destino = getAccountById(destinoId);
+    if (origen == null || destino == null) {
+      return 'Una de las cuentas ya no existe';
+    }
+
+    if (origen.balance < monto) {
+      return 'Saldo insuficiente en ${origen.name}';
+    }
+
+    final texto = concepto?.trim() ?? '';
+    final etiqueta = texto.isEmpty ? 'Transferencia' : 'Transferencia: $texto';
+
+    // 1. Descontar del origen. Si falla, el destino no se toca.
+    final salio = await aplicarMovimiento(
+      accountId: origenId,
+      monto: -monto, // sale
+      concepto: etiqueta,
+      referenciaId: destinoId,
+    );
+    if (!salio) return 'Saldo insuficiente en ${origen.name}';
+
+    // 2. Abonar al destino. Ya se validó que existe, y un abono
+    // positivo nunca deja la cuenta en negativo.
+    await aplicarMovimiento(
+      accountId: destinoId,
+      monto: monto, // entra
+      concepto: etiqueta,
+      referenciaId: origenId,
+    );
+
+    return null;
+  }
   /// Saca dinero de una cuenta desde el botón de retirar de Banco.
   /// El concepto es el que eligió el usuario de su lista.
   /// Devuelve null si salió bien, o el mensaje de error para la alerta.

@@ -5,6 +5,7 @@ import 'package:asend/theme/app_theme.dart';
 import 'package:asend/bank/services/account_service.dart';
 import 'package:asend/cashout/services/cash_out_service.dart';
 import 'package:asend/cashout/services/cash_out_config_service.dart';
+import 'package:asend/theme/notification_dot.dart';
 
 class CashOutScreen extends StatefulWidget {
   const CashOutScreen({super.key});
@@ -175,25 +176,32 @@ class _CashOutScreenState extends State<CashOutScreen> {
     required String texto,
     required bool esPaga,
     required bool alineadoDerecha,
+    bool eliminada = false,
   }) {
     return Expanded(
-      child: InkWell(
-        onTap: () => _seleccionarCuenta(esPaga: esPaga),
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-          decoration: BoxDecoration(
-            color: AppTheme.bgDarkGrey,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppTheme.buttonPurple),
-          ),
-          child: Text(
-            texto,
-            textAlign: alineadoDerecha ? TextAlign.right : TextAlign.left,
-            style: const TextStyle(
-              color: AppTheme.textWhite,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+      // Punto rojo si la cuenta elegida ya no existe en Banco
+      child: NotificationDot(
+        visible: eliminada,
+        child: InkWell(
+          onTap: () => _seleccionarCuenta(esPaga: esPaga),
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            decoration: BoxDecoration(
+              color: AppTheme.bgDarkGrey,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: eliminada ? AppTheme.danger : AppTheme.buttonPurple,
+              ),
+            ),
+            child: Text(
+              texto,
+              textAlign: alineadoDerecha ? TextAlign.right : TextAlign.left,
+              style: const TextStyle(
+                color: AppTheme.textWhite,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
@@ -214,6 +222,10 @@ class _CashOutScreenState extends State<CashOutScreen> {
         ? null
         : AccountService.getAccountById(config!.cuentaRecibeId!);
 
+    // Cuentas que se eligieron antes y ya fueron eliminadas de Banco
+    final pagaEliminada = CashOutConfigService.cuentaPagaEliminada();
+    final recibeEliminada = CashOutConfigService.cuentaRecibeEliminada();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Pagos'), centerTitle: true),
       body: Column(
@@ -224,17 +236,23 @@ class _CashOutScreenState extends State<CashOutScreen> {
             child: Row(
               children: [
                 _botonCuenta(
-                  texto: cuentaPaga?.name ?? 'Cuenta que paga',
+                  texto: pagaEliminada
+                      ? 'Cuenta eliminada'
+                      : cuentaPaga?.name ?? 'Cuenta que paga',
                   esPaga: true,
                   alineadoDerecha: false,
+                  eliminada: pagaEliminada,
                 ),
                 const SizedBox(width: 12),
                 _botonCuenta(
-                  texto: cuentaRecibe == null
+                  texto: recibeEliminada
+                      ? 'Cuenta eliminada'
+                      : cuentaRecibe == null
                       ? 'Cuenta que recibe'
                       : '${cuentaRecibe.balance}',
                   esPaga: false,
                   alineadoDerecha: true,
+                  eliminada: recibeEliminada,
                 ),
               ],
             ),

@@ -52,6 +52,15 @@ class MovementService {
 
     if (concepto.startsWith('Abono:')) return 'Abono';
 
+    // Ingreso directo y transferencia: si se escribió concepto,
+    // se muestra junto a la categoría
+    if (concepto.startsWith('Ingreso')) {
+      return _conDetalle('Ingreso', concepto);
+    }
+    if (concepto.startsWith('Transferencia')) {
+      return _conDetalle('Transferencia', concepto);
+    }
+
     // Retiro manual: se muestra el concepto que eligió el usuario
     if (concepto.startsWith('Retiro:')) {
       final texto = concepto.substring('Retiro:'.length).trim();
@@ -61,6 +70,14 @@ class MovementService {
     return 'M. antiguo';
   }
 
+  /// "Transferencia" si no hay concepto; "Transferencia · Coche" si lo hay.
+  static String _conDetalle(String categoria, String concepto) {
+    final i = concepto.indexOf(':');
+    if (i == -1) return categoria;
+
+    final detalle = concepto.substring(i + 1).trim();
+    return detalle.isEmpty ? categoria : '$categoria · $detalle';
+  }
   /// Todos los movimientos vivos, del más nuevo al más viejo.
   static List<AccountHistory> _getTodos() {
     final box = HiveService.getAccountHistoryBox();
