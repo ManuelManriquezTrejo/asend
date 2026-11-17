@@ -26,6 +26,7 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
       });
     }
   }
+
   /// Un fondo que reparte a cuentas eliminadas no deja abonar.
   /// Ofrece modificarlo (cuentas y porcentajes) o eliminarlo.
   Future<void> _avisoFondoConProblema(Fund fund) async {
@@ -72,7 +73,6 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
     if (opcion == null || !mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
 
     if (opcion == 'eliminar') {
       await FundService.deleteFund(fund.id);
@@ -84,7 +84,14 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
       return;
     }
 
-    // Modificar: se cierra la lista de fondos y se abre la de cuentas
+    _abrirModificar(fund);
+  }
+
+  /// Cierra la lista de fondos y abre la elección de cuentas y
+  /// porcentajes de ese fondo, ya con sus valores actuales.
+  void _abrirModificar(Fund fund) {
+    final navigator = Navigator.of(context);
+
     navigator.pop();
     navigator.push(
       MaterialPageRoute(
@@ -96,6 +103,70 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
       ),
     );
   }
+
+  /// Pide el nombre nuevo de un fondo y lo guarda.
+  Future<void> _renombrarFondo(Fund fund) async {
+    final controlador = TextEditingController(text: fund.name);
+    String? error;
+    bool hecho = false;
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text(
+            'Cambiar nombre',
+            style: TextStyle(color: AppTheme.textWhite),
+          ),
+          content: TextField(
+            controller: controlador,
+            autofocus: true,
+            textCapitalization: TextCapitalization.sentences,
+            style: const TextStyle(color: AppTheme.textWhite),
+            decoration: InputDecoration(errorText: error),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: AppTheme.textGrey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final navigator = Navigator.of(context);
+
+                final mensaje = await FundService.renombrarFondo(
+                  fundId: fund.id,
+                  nombre: controlador.text,
+                );
+
+                if (mensaje != null) {
+                  setDialogState(() => error = mensaje);
+                  return;
+                }
+
+                hecho = true;
+                navigator.pop();
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // El TextField sigue usando el controlador durante la animación
+    // de cierre; liberarlo antes rompe el árbol de widgets
+    await Future.delayed(const Duration(milliseconds: 300));
+    controlador.dispose();
+
+    if (!mounted || !hecho) return;
+    _refreshFunds();
+    widget.onFundAdded();
+  }
+
   void _showDeleteFundDialog() {
     List<Fund> funds = FundService.getAllFunds();
 
@@ -224,14 +295,40 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
                               ),
                             )
                           : null,
+                      // Lápiz con dos opciones: nombre, o cuentas y
+                      // porcentajes. Tocar el nombre sigue abriendo abonar.
                       trailing: NotificationDot(
                         visible: conProblema,
-                        child: const Padding(
-                          padding: EdgeInsets.all(4),
-                          child: Icon(
-                            Icons.arrow_forward,
+                        child: PopupMenuButton<String>(
+                          icon: const Icon(
+                            Icons.edit,
                             color: AppTheme.buttonPurple,
+                            size: 20,
                           ),
+                          color: AppTheme.bgDarkGrey,
+                          onSelected: (opcion) {
+                            if (opcion == 'nombre') {
+                              _renombrarFondo(fund);
+                            } else {
+                              _abrirModificar(fund);
+                            }
+                          },
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                              value: 'nombre',
+                              child: Text(
+                                'Cambiar nombre',
+                                style: TextStyle(color: AppTheme.textWhite),
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'cuentas',
+                              child: Text(
+                                'Cuentas y porcentajes',
+                                style: TextStyle(color: AppTheme.textWhite),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       onTap: () {

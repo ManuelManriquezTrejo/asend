@@ -139,7 +139,35 @@ class FundService {
       await fundAccountsBox.delete(key);
     }
   }
+  /// Cambia el nombre de un fondo. Los abonos anteriores conservan en el
+  /// historial el nombre que tenía el fondo cuando se hicieron.
+  /// Devuelve null si salió bien, o el mensaje de error.
+  static Future<String?> renombrarFondo({
+    required int fundId,
+    required String nombre,
+  }) async {
+    final limpio = nombre.trim();
+    if (limpio.isEmpty) return 'Escribe un nombre';
 
+    final fondo = getFundById(fundId);
+    if (fondo == null || fondo.deletedAt != null) {
+      return 'Ese fondo ya no existe';
+    }
+
+    final repetido = getAllFunds().any(
+      (f) =>
+          f.id != fundId && f.name.trim().toLowerCase() == limpio.toLowerCase(),
+    );
+    if (repetido) return 'Ya existe un fondo con ese nombre';
+
+    // Fund no permite cambiar sus campos: se guarda una copia con el
+    // nombre nuevo bajo la misma llave, conservando id y fecha
+    await Hive.box(fundsBoxName).put(
+      fundId,
+      Fund(id: fondo.id, name: limpio, createdAt: fondo.createdAt),
+    );
+    return null;
+  }
   // Marcar un fondo como eliminado (soft delete)
   static Future<void> deleteFund(int fundId) async {
     var fundsBox = Hive.box(fundsBoxName);
