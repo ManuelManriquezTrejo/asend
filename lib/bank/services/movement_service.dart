@@ -42,6 +42,10 @@ class MovementService {
     if (concepto.startsWith('Ajuste de compra')) return 'Ajuste';
     if (concepto.startsWith('Compra')) return 'Compra';
 
+    // Pago de deuda va antes que 'Pago' a secas, que es el de Pagos
+    if (concepto.startsWith('Pago de deuda')) {
+      return _conDetalle('Pago de deuda', concepto);
+    }
     if (concepto.startsWith('Pago')) return 'Pago';
     if (concepto.startsWith('Cobro')) return 'Pago';
 

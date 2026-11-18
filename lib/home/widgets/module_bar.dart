@@ -1,4 +1,5 @@
 import 'package:asend/bank/screens/bank_screen.dart';
+import 'package:asend/bank/services/debt_service.dart';
 import 'package:asend/bank/services/fund_service.dart';
 import 'package:asend/birthdays/screens/birthdays_screen.dart';
 import 'package:asend/body/screens/body_screen.dart';
@@ -47,8 +48,9 @@ final List<_Seccion> _secciones = [
     _Opcion(
       Icons.account_balance,
       'Banco',
-      () => const BankScreen(),
-      FundService.hayFondosConProblema,
+            () => const BankScreen(),
+      // Fondos con cuentas eliminadas, o un pago de deuda para hoy
+      () => FundService.hayFondosConProblema() || DebtService.hayPagoParaHoy(),
     ),
     _Opcion(
       Icons.payments,

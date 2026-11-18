@@ -12,6 +12,7 @@ class AppTheme {
   ); // Blanco tenue (hints, iconos secundarios)
   static const Color danger = Color(0xFFF44336); // Rojo (errores, eliminar)
   static const Color success = Color(0xFF4CAF50); // Verde (éxito, seleccionado)
+    static const Color successLight = Color(0xFF81C784); // Verde claro
   static const Color disabled = Color(0xFF9E9E9E); // Gris (deshabilitado)
 
   // ThemeData oscuro centralizado
