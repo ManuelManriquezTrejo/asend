@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:asend/bank/services/account_service.dart';
+import 'package:asend/bank/services/money_service.dart';
 import 'package:asend/cashout/services/cash_out_config_service.dart';
 import 'package:asend/database/debt_hive_service.dart';
 import 'package:asend/models/debt.dart';
@@ -469,25 +470,36 @@ class DebtService {
     return null;
   }
 
-  /// Paga completas las mensualidades marcadas desde una cuenta.
-  /// Si el saldo no alcanza para todas, no se paga ninguna.
-  /// Cada una queda en el historial como "Pago de deuda: nombre".
+    /// Paga completas las mensualidades marcadas desde una cuenta y un
+  /// elemento de Dinero. Si alguno de los dos no alcanza para todas, no
+  /// se paga ninguna. Cada una queda en los dos historiales como
+  /// "Pago de deuda: nombre".
   /// Devuelve null si salió bien, o el mensaje de error.
   static Future<String?> pagar({
     required List<DebtInstallment> cuotas,
     required int accountId,
+    required int moneyId,
   }) async {
     if (cuotas.isEmpty) return 'Marca al menos un pago';
 
     final cuenta = AccountService.getAccountById(accountId);
     if (cuenta == null) return 'Esa cuenta ya no existe';
 
+    final dinero = MoneyService.getById(moneyId);
+    if (dinero == null) return 'Ese dinero ya no existe';
+
     final total = cuotas.fold<double>(0, (s, c) => s + c.monto);
 
-    // Medio centavo de margen por los decimales de los repartos
+    // Validar los dos antes de mover cualquiera.
+    // Medio centavo de margen por los decimales de los repartos.
     if (cuenta.balance + 0.005 < total) {
       return 'Saldo insuficiente en ${cuenta.name}. '
           'Tiene \$${cuenta.balance.toStringAsFixed(2)} '
+          'y el pago es de \$${total.toStringAsFixed(2)}';
+    }
+    if (dinero.balance + 0.005 < total) {
+      return 'Saldo insuficiente en ${dinero.name}. '
+          'Tiene \$${dinero.balance.toStringAsFixed(2)} '
           'y el pago es de \$${total.toStringAsFixed(2)}';
     }
 
@@ -503,12 +515,20 @@ class DebtService {
       );
       if (!ok) return 'No se pudo pagar ${nombreDe(c)}';
 
+      await MoneyService.aplicarMovimiento(
+        moneyId: moneyId,
+        monto: -c.monto,
+        concepto: 'Pago de deuda: ${nombreDe(c)}',
+        referenciaId: c.id,
+      );
+
       c.pagadoAt = ahora;
       c.accountId = accountId;
       await box.put(c.id, c);
     }
 
     await DebtHiveService.getSettingsBox().put(_claveUltimaCuenta, accountId);
+    await MoneyService.setUltimoId(MoneyService.enPagoDeuda, moneyId);
     return null;
   }
 }

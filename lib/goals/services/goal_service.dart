@@ -8,6 +8,10 @@ import 'package:asend/models/goal.dart';
 /// (cuentaRecibeId de CashOut), vía AccountService.aplicarMovimiento,
 /// para que todo movimiento quede registrado en AccountHistory.
 ///
+/// Lo que entra a las metas no desaparece de Banco: pasa a la cuenta
+/// fija "Metas", cuyo saldo siempre es igual al total apartado.
+/// Abonar o repartir la sube; retirar o eliminar una meta la baja.
+///
 /// Los métodos que mueven dinero devuelven String?:
 ///   null    = todo salió bien
 ///   texto   = mensaje de error listo para mostrar en una alerta
@@ -39,6 +43,41 @@ class GoalService {
     return CashOutConfigService.getConfigSync()?.cuentaRecibeId;
   }
 
+  /// Id de la cuenta Metas si existe y está activa.
+  static int? _getCuentaMetasId() {
+    final id = AccountService.getCuentaMetasId();
+    if (id == null || AccountService.getAccountById(id) == null) return null;
+    return id;
+  }
+
+  /// Crea la cuenta Metas si no existe, con saldo igual al total que
+  /// ya está apartado en metas. Se llama al arrancar la app y antes de
+  /// cada movimiento, así la cuenta siempre está.
+  static Future<int> asegurarCuentaMetas() async {
+    final existente = _getCuentaMetasId();
+    if (existente != null) return existente;
+
+    await AccountService.addAccount(name: 'Metas', balance: 0);
+
+    // La recién creada tiene el id más alto de todas las activas
+    final nuevaId = AccountService.getAllAccounts()
+        .map((c) => c.id)
+        .reduce((a, b) => a > b ? a : b);
+    await AccountService.setCuentaMetasId(nuevaId);
+
+    // El saldo inicial entra como movimiento para que quede en el
+    // historial de dónde salió
+    final total = getTotalApartado();
+    if (total > 0) {
+      await AccountService.aplicarMovimiento(
+        accountId: nuevaId,
+        monto: total.toDouble(),
+        concepto: 'Saldo inicial: total en metas',
+      );
+    }
+    return nuevaId;
+  }
+
   /// Saldo disponible en esa cuenta. null si no hay cuenta configurada.
   static double? getSaldoCuenta() {
     final cuentaId = _getCuentaId();
@@ -66,8 +105,9 @@ class GoalService {
     );
   }
 
-  /// Soft delete. Si la meta tiene fondos, se devuelven a la cuenta
-  /// ANTES de marcarla como borrada. Si la devolución falla, no se borra.
+  /// Soft delete. Si la meta tiene fondos, salen de la cuenta Metas y
+  /// regresan a la cuenta que recibe ANTES de marcarla como borrada.
+  /// Si algo falla, no se borra.
   static Future<String?> eliminarMeta(int goalId) async {
     final box = GoalHiveService.getGoalsBox();
     final meta = box.get(goalId);
@@ -76,17 +116,23 @@ class GoalService {
     if (meta.saldo > 0) {
       final cuentaId = _getCuentaId();
       if (cuentaId == null) return _sinCuenta;
+      final metasId = await asegurarCuentaMetas();
 
-      final ok = await AccountService.aplicarMovimiento(
+      // Primero sale de Metas: si no alcanza, no se mueve nada
+      final salio = await AccountService.aplicarMovimiento(
+        accountId: metasId,
+        monto: -meta.saldo.toDouble(),
+        concepto: 'Meta eliminada: ${meta.nombre}',
+        referenciaId: meta.id,
+      );
+      if (!salio) return _metasDescuadrada;
+
+      await AccountService.aplicarMovimiento(
         accountId: cuentaId,
         monto: meta.saldo.toDouble(), // entra
         concepto: 'Meta eliminada: ${meta.nombre}',
         referenciaId: meta.id,
       );
-
-      // Si no se pudo devolver el dinero, abortar: el dinero
-      // no puede quedar atrapado en una meta borrada.
-      if (!ok) return 'No se pudo devolver el dinero a la cuenta';
 
       meta.saldo = 0;
     }
@@ -100,7 +146,8 @@ class GoalService {
   // MOVIMIENTOS INDIVIDUALES
   // ─────────────────────────────────────────────
 
-  /// Abona a una sola meta. Descuenta de la cuenta.
+  /// Abona a una sola meta: sale de la cuenta que recibe y entra a la
+  /// cuenta Metas.
   static Future<String?> abonar(int goalId, int monto) async {
     if (monto <= 0) return 'El monto debe ser mayor a 0';
 
@@ -110,6 +157,7 @@ class GoalService {
 
     final cuentaId = _getCuentaId();
     if (cuentaId == null) return _sinCuenta;
+    final metasId = await asegurarCuentaMetas();
 
     final ok = await AccountService.aplicarMovimiento(
       accountId: cuentaId,
@@ -120,12 +168,21 @@ class GoalService {
 
     if (!ok) return 'Saldo insuficiente en la cuenta';
 
+    // Entrar nunca falla: no puede dejar la cuenta en negativo
+    await AccountService.aplicarMovimiento(
+      accountId: metasId,
+      monto: monto.toDouble(),
+      concepto: 'Abono a meta: ${meta.nombre}',
+      referenciaId: meta.id,
+    );
+
     meta.saldo += monto;
     await box.put(meta.id, meta);
     return null;
   }
 
-  /// Retira de una meta sin borrarla. El dinero vuelve a la cuenta.
+  /// Retira de una meta sin borrarla: sale de la cuenta Metas y vuelve
+  /// a la cuenta que recibe.
   static Future<String?> retirar(int goalId, int monto) async {
     if (monto <= 0) return 'El monto debe ser mayor a 0';
 
@@ -139,15 +196,23 @@ class GoalService {
 
     final cuentaId = _getCuentaId();
     if (cuentaId == null) return _sinCuenta;
+    final metasId = await asegurarCuentaMetas();
 
-    final ok = await AccountService.aplicarMovimiento(
+    // Primero sale de Metas: si no alcanza, no se mueve nada
+    final salio = await AccountService.aplicarMovimiento(
+      accountId: metasId,
+      monto: -monto.toDouble(),
+      concepto: 'Retiro de meta: ${meta.nombre}',
+      referenciaId: meta.id,
+    );
+    if (!salio) return _metasDescuadrada;
+
+    await AccountService.aplicarMovimiento(
       accountId: cuentaId,
       monto: monto.toDouble(), // entra
       concepto: 'Retiro de meta: ${meta.nombre}',
       referenciaId: meta.id,
     );
-
-    if (!ok) return 'No se pudo devolver el dinero a la cuenta';
 
     meta.saldo -= monto;
     await box.put(meta.id, meta);
@@ -184,6 +249,7 @@ class GoalService {
 
     final cuentaId = _getCuentaId();
     if (cuentaId == null) return _sinCuenta;
+    final metasId = await asegurarCuentaMetas();
 
     // Un solo movimiento por el total repartido.
     // El sobrante nunca se descuenta, así que no hay que devolverlo.
@@ -194,6 +260,12 @@ class GoalService {
     );
 
     if (!ok) return 'Saldo insuficiente en la cuenta';
+
+    await AccountService.aplicarMovimiento(
+      accountId: metasId,
+      monto: repartido.toDouble(),
+      concepto: 'Reparto a metas ($porMeta c/u)',
+    );
 
     final box = GoalHiveService.getGoalsBox();
     for (final meta in metas) {
@@ -206,4 +278,8 @@ class GoalService {
 
   static const String _sinCuenta =
       'Primero selecciona la cuenta que recibe, en Pagos';
+
+  /// Solo pasa si la cuenta Metas tiene menos que lo apartado.
+  static const String _metasDescuadrada =
+      'La cuenta Metas tiene menos dinero que tus metas';
 }

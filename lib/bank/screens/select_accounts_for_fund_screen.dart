@@ -4,6 +4,7 @@ import 'package:asend/bank/services/fund_service.dart';
 import 'package:asend/bank/screens/add_account_screen.dart';
 import 'package:asend/models/account.dart';
 import 'package:asend/bank/screens/distribute_fund_percentage_screen.dart';
+import 'package:asend/bank/screens/select_money_for_fund_screen.dart';
 import 'package:asend/theme/app_theme.dart';
 
 class SelectAccountsForFundScreen extends StatefulWidget {
@@ -61,15 +62,38 @@ class _SelectAccountsForFundScreenState
       return;
     }
 
-    // Navegar a la pantalla de distribuir porcentajes
+    // Porcentajes actuales del fondo, para arrancar con ellos
+    final iniciales = <int, double>{};
+    if (widget.fundId != null) {
+      for (final fa in FundService.getFundAccountsByFundId(widget.fundId!)) {
+        iniciales[fa.accountId] = fa.percentage;
+      }
+    }
+
+    // Repartir entre las cuentas y después elegir el Dinero
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => DistributeFundPercentageScreen(
-          fundName: widget.fundName,
-          selectedAccountIds: selectedAccountIds,
-          onFundAdded: widget.onFundAdded,
-          fundId: widget.fundId,
+          titulo: 'Distribuye "${widget.fundName}" entre las cuentas',
+          items: selectedAccountIds
+              .map((id) => (id: id, nombre: AccountService.getAccountName(id)))
+              .toList(),
+          iniciales: iniciales,
+          textoBoton: 'Continuar',
+          onListo: (porcentajesCuentas) async {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SelectMoneyForFundScreen(
+                  fundName: widget.fundName,
+                  fundId: widget.fundId,
+                  porcentajesCuentas: porcentajesCuentas,
+                  onFundAdded: widget.onFundAdded,
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -78,8 +102,7 @@ class _SelectAccountsForFundScreenState
   @override
   Widget build(BuildContext context) {
     // Obtener todas las cuentas de la base de datos
-    List<Account> accounts = AccountService.getAllAccounts();
-
+    List<Account> accounts = AccountService.getCuentasMovibles();
     return Scaffold(
       appBar: AppBar(title: const Text('Seleccionar Cuentas')),
       body: Column(

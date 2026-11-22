@@ -1,26 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:asend/bank/services/fund_service.dart';
-import 'package:asend/bank/services/account_service.dart';
-import 'package:asend/models/account.dart';
-import 'package:asend/models/fund.dart';
 import 'package:asend/theme/app_theme.dart';
 import 'dart:math';
 
+/// Reparte el 100% de un fondo entre varios elementos con sliders y
+/// campos de texto. Si a uno le subes, los otros bajan solos.
+///
+/// Sirve para las dos partes del fondo: el reparto a Cuentas y el
+/// reparto a Dinero. No guarda nada: al tocar el botón entrega los
+/// porcentajes a [onListo], que decide qué sigue.
 class DistributeFundPercentageScreen extends StatefulWidget {
-  final String fundName;
-  final List<int> selectedAccountIds;
-  final Function onFundAdded;
+  /// Texto de arriba, por ejemplo: Distribuye "Sueldo" entre las cuentas
+  final String titulo;
 
-  /// Con un id, guarda los porcentajes en ese fondo en lugar de
-  /// crear uno nuevo.
-  final int? fundId;
+  /// Elementos a repartir, en el orden en que se muestran.
+  final List<({int id, String nombre})> items;
+
+  /// Porcentajes con los que arranca, por ejemplo al modificar un fondo.
+  /// Los elementos que no estén aquí empiezan en 0.1.
+  final Map<int, double> iniciales;
+
+  /// Texto del botón de abajo: "Continuar" o "Guardar fondo".
+  final String textoBoton;
+
+  /// Recibe {id: porcentaje} cuando ya suman 100.
+  final Future<void> Function(Map<int, double> porcentajes) onListo;
 
   const DistributeFundPercentageScreen({
     super.key,
-    required this.fundName,
-    required this.selectedAccountIds,
-    required this.onFundAdded,
-    this.fundId,
+    required this.titulo,
+    required this.items,
+    required this.textoBoton,
+    required this.onListo,
+    this.iniciales = const {},
   });
 
   @override
@@ -33,40 +44,33 @@ class _DistributeFundPercentageScreenState
   late Map<int, double> percentages;
   late Map<int, TextEditingController> controllers;
 
+  /// Mientras onListo trabaja, el botón queda desactivado
+  bool _guardando = false;
+
+  List<int> get _ids => widget.items.map((i) => i.id).toList();
+
   @override
   void initState() {
     super.initState();
     percentages = {};
     controllers = {};
 
-    for (int accountId in widget.selectedAccountIds) {
-      percentages[accountId] = 0.1;
-      controllers[accountId] = TextEditingController(text: '0.1');
+    for (final id in _ids) {
+      percentages[id] = widget.iniciales[id] ?? 0.1;
     }
 
-    if (widget.fundId != null) _cargarPorcentajesActuales();
-  }
-
-  /// Al modificar un fondo, arranca con los porcentajes que ya tenían
-  /// sus cuentas. Las cuentas nuevas empiezan en 0.1, y lo que dejaron
-  /// las cuentas eliminadas queda como saldo restante por repartir.
-  void _cargarPorcentajesActuales() {
-    for (final fa in FundService.getFundAccountsByFundId(widget.fundId!)) {
-      if (percentages.containsKey(fa.accountId)) {
-        percentages[fa.accountId] = fa.percentage;
-      }
-    }
-
-    // Si al sumar las cuentas nuevas se pasa de 100, se quita el
-    // excedente a la cuenta con más porcentaje
+    // Si al sumar los nuevos se pasa de 100, se quita el excedente al
+    // que tiene más porcentaje
     final total = percentages.values.fold<double>(0, (s, v) => s + v);
     if (total > 100) {
       final mayor = _getAccountWithMaxPercentage();
       percentages[mayor] = percentages[mayor]! - (total - 100);
     }
 
-    for (final id in widget.selectedAccountIds) {
-      controllers[id]!.text = percentages[id]!.toStringAsFixed(1);
+    for (final id in _ids) {
+      controllers[id] = TextEditingController(
+        text: percentages[id]!.toStringAsFixed(1),
+      );
     }
   }
 
@@ -84,12 +88,12 @@ class _DistributeFundPercentageScreenState
     return 100.0 - total;
   }
 
-  // Obtener la cuenta con mayor porcentaje (para restar de ahí)
+  // Obtener el elemento con mayor porcentaje (para restar de ahí)
   int _getAccountWithMaxPercentage({int? excludeAccountId}) {
     int maxAccountId = -1;
     double maxValue = -1;
 
-    for (int accountId in widget.selectedAccountIds) {
+    for (int accountId in _ids) {
       if (excludeAccountId != null && accountId == excludeAccountId) {
         continue;
       }
@@ -102,9 +106,7 @@ class _DistributeFundPercentageScreenState
     }
 
     if (maxAccountId == -1) {
-      return widget.selectedAccountIds.firstWhere(
-        (id) => id != excludeAccountId,
-      );
+      return _ids.firstWhere((id) => id != excludeAccountId);
     }
 
     return maxAccountId;
@@ -126,26 +128,31 @@ class _DistributeFundPercentageScreenState
 
       // Si no hay suficiente restante
       if (remaining - difference < 0) {
-        // Restar de la cuenta con mayor porcentaje
-        int maxAccountId = _getAccountWithMaxPercentage(
-          excludeAccountId: accountId,
-        );
-        double maxValue = percentages[maxAccountId] ?? 0;
-        double neededAmount = difference - remaining;
-
-        // Verificar que no baje de 0.1%
-        if (maxValue - neededAmount >= 0.1) {
-          percentages[maxAccountId] = maxValue - neededAmount;
-          controllers[maxAccountId]?.text = percentages[maxAccountId]!
-              .toStringAsFixed(1);
+        // Con un solo elemento no hay de dónde restar
+        if (_ids.length == 1) {
+          newValue = oldValue + remaining;
         } else {
-          // No se puede hacer el cambio
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No hay suficiente porcentaje disponible'),
-            ),
+          // Restar del que tiene mayor porcentaje
+          int maxAccountId = _getAccountWithMaxPercentage(
+            excludeAccountId: accountId,
           );
-          return;
+          double maxValue = percentages[maxAccountId] ?? 0;
+          double neededAmount = difference - remaining;
+
+          // Verificar que no baje de 0.1%
+          if (maxValue - neededAmount >= 0.1) {
+            percentages[maxAccountId] = maxValue - neededAmount;
+            controllers[maxAccountId]?.text = percentages[maxAccountId]!
+                .toStringAsFixed(1);
+          } else {
+            // No se puede hacer el cambio
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No hay suficiente porcentaje disponible'),
+              ),
+            );
+            return;
+          }
         }
       }
     }
@@ -156,7 +163,7 @@ class _DistributeFundPercentageScreenState
     setState(() {});
   }
 
-  // Al perder el foco del TextField - con lógica avanzada
+  // Al terminar de escribir en el campo
   void _onFieldEditingComplete(int accountId) {
     String currentText = controllers[accountId]?.text ?? '';
 
@@ -166,7 +173,7 @@ class _DistributeFundPercentageScreenState
       return;
     }
 
-    double? parsed = double.tryParse(currentText);
+    double? parsed = double.tryParse(currentText.replaceAll(',', '.'));
     if (parsed == null) {
       // Si no es un número válido, mantener el valor anterior
       controllers[accountId]?.text = (percentages[accountId] ?? 0.1)
@@ -182,15 +189,15 @@ class _DistributeFundPercentageScreenState
 
     // Si es 100 o más
     if (parsed >= 100) {
-      // Poner todas las otras en 0.1
-      for (int id in widget.selectedAccountIds) {
+      // Poner todos los otros en 0.1
+      for (int id in _ids) {
         if (id != accountId) {
           percentages[id] = 0.1;
           controllers[id]?.text = '0.1';
         }
       }
-      // Esta cuenta toma lo que falta para 100
-      double newValue = 100.0 - ((widget.selectedAccountIds.length - 1) * 0.1);
+      // Este toma lo que falta para 100
+      double newValue = 100.0 - ((_ids.length - 1) * 0.1);
       percentages[accountId] = newValue;
       controllers[accountId]?.text = newValue.toStringAsFixed(1);
       setState(() {});
@@ -213,16 +220,12 @@ class _DistributeFundPercentageScreenState
         return;
       }
 
-      // Si no hay suficiente, tomar de las otras cuentas
+      // Si no hay suficiente, tomar de los otros
       double neededAmount = difference - remaining;
-      Map<int, double> originalPercentages = Map.from(
-        percentages,
-      ); // Guardar copia
+      Map<int, double> originalPercentages = Map.from(percentages);
 
-      // Intentar restar de todas las otras cuentas
-      List<int> otherAccounts = widget.selectedAccountIds
-          .where((id) => id != accountId)
-          .toList();
+      // Intentar restar de todos los otros
+      List<int> otherAccounts = _ids.where((id) => id != accountId).toList();
 
       for (int otherId in otherAccounts) {
         double currentOtherValue = percentages[otherId] ?? 0;
@@ -238,11 +241,10 @@ class _DistributeFundPercentageScreenState
         }
       }
 
-      // Si aún falta, verificar si se pudo completar
+      // Si aún falta, no se pudo: restaurar valores
       if (neededAmount > 0.01) {
-        // No se pudo, restaurar valores
         percentages = originalPercentages;
-        for (int id in widget.selectedAccountIds) {
+        for (int id in _ids) {
           controllers[id]?.text = (percentages[id] ?? 0.1).toStringAsFixed(1);
         }
         ScaffoldMessenger.of(context).showSnackBar(
@@ -253,7 +255,7 @@ class _DistributeFundPercentageScreenState
         return;
       }
 
-      // Actualizar esta cuenta
+      // Actualizar este
       percentages[accountId] = parsed;
       controllers[accountId]?.text = parsed.toStringAsFixed(1);
       setState(() {});
@@ -263,120 +265,19 @@ class _DistributeFundPercentageScreenState
     }
   }
 
-  // Guardar el fondo
-  void _saveFund() async {
-    try {
-      if (widget.fundId != null) {
-        await _guardarCambios();
-        return;
-      }
-
-      // Crear el fondo
-      await FundService.addFund(name: widget.fundName);
-
-      // Obtener el ID del fondo recién creado
-      List<Fund> allFunds = FundService.getAllFunds();
-
-      // Buscar el ID más alto, no la última posición de la lista
-      int fundId = allFunds.map((f) => f.id).reduce(max);
-
-      // Guardar las relaciones fondo-cuenta
-      for (int accountId in widget.selectedAccountIds) {
-        double percentage = percentages[accountId] ?? 0.1;
-        await FundService.addFundAccount(
-          fundId: fundId,
-          accountId: accountId,
-          percentage: percentage,
-        );
-      }
-
-      // Notificar que se creó el fondo
-      widget.onFundAdded();
-
-      // Verificar que el widget aún está montado
-      if (!mounted) return;
-
-      // Mostrar diálogo de éxito
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: AppTheme.bgDarkGrey,
-            title: Text(
-              'El fondo "${widget.fundName}" se guardó correctamente',
-              style: const TextStyle(
-                color: AppTheme.textWhite,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: const Text(
-              'La distribución de porcentajes se ha aplicado correctamente.',
-              style: TextStyle(color: AppTheme.textGrey),
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  // Cierra el diálogo
-                  Navigator.pop(context);
-                  // Pop 1: DistributeFundPercentageScreen
-                  Navigator.pop(context);
-                  // Pop 2: SelectAccountsForFundScreen
-                  Navigator.pop(context);
-                  // Pop 3: AddFundNameScreen
-                  Navigator.pop(context);
-                  // Ya estás en BankScreen
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.buttonPurple,
-                ),
-                child: const Text(
-                  'Aceptar',
-                  style: TextStyle(color: AppTheme.textWhite),
-                ),
-              ),
-            ],
-          );
-        },
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
-    }
+  /// Entrega los porcentajes. Lo que pasa después (seguir a Dinero o
+  /// guardar el fondo) lo decide quien abrió esta pantalla.
+  Future<void> _listo() async {
+    setState(() => _guardando = true);
+    await widget.onListo(Map.of(percentages));
+    if (mounted) setState(() => _guardando = false);
   }
-  /// Reemplaza las cuentas y porcentajes de un fondo existente.
-  /// El fondo conserva su id y su nombre.
-  Future<void> _guardarCambios() async {
-    final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
 
-    await FundService.updateFundAccountPercentages(
-      fundId: widget.fundId!,
-      accountPercentages: widget.selectedAccountIds
-          .map(
-            (id) => {'accountId': id, 'percentage': percentages[id] ?? 0.1},
-          )
-          .toList(),
-    );
-
-    widget.onFundAdded();
-
-    // Cerrar esta pantalla y la de elegir cuentas
-    navigator.pop();
-    navigator.pop();
-
-    messenger.showSnackBar(
-      SnackBar(content: Text('Fondo "${widget.fundName}" actualizado')),
-    );
-  }
   @override
   Widget build(BuildContext context) {
     double remaining = _getRemaining();
-    // El botón se habilita cuando saldo restante es 0 (o muy cercano)
-    bool canContinue = remaining.abs() <= 0.1;
+    // El botón se habilita cuando el saldo restante es 0 (o muy cercano)
+    bool canContinue = remaining.abs() <= 0.1 && !_guardando;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Repartir Fondos')),
@@ -386,7 +287,7 @@ class _DistributeFundPercentageScreenState
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Text(
-              'Distribuye "${widget.fundName}" entre las cuentas',
+              widget.titulo,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -396,25 +297,21 @@ class _DistributeFundPercentageScreenState
             ),
           ),
 
-          // Lista de cuentas con sliders y campos de texto
+          // Lista con sliders y campos de texto
           Expanded(
             child: ListView.builder(
-              itemCount: widget.selectedAccountIds.length,
+              itemCount: widget.items.length,
               itemBuilder: (context, index) {
-                int accountId = widget.selectedAccountIds[index];
-                Account? account = AccountService.getAccountById(accountId);
-                double currentPercentage = percentages[accountId] ?? 0.1;
-
-                if (account == null) return const SizedBox();
+                final item = widget.items[index];
+                double currentPercentage = percentages[item.id] ?? 0.1;
 
                 return Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Nombre de la cuenta
                       Text(
-                        account.name,
+                        item.nombre,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -425,25 +322,24 @@ class _DistributeFundPercentageScreenState
 
                       // Slider para ajustar porcentaje
                       Slider(
-                        value: currentPercentage,
+                        value: currentPercentage.clamp(0.1, 100.0),
                         min: 0.1,
                         max: 100.0,
                         divisions: 999,
                         label: '${currentPercentage.toStringAsFixed(1)}%',
                         onChanged: (value) {
-                          _updatePercentage(accountId, value);
+                          _updatePercentage(item.id, value);
                         },
                       ),
 
                       // Campo de texto para escribir manualmente
                       TextField(
-                        controller: controllers[accountId],
-                        keyboardType: TextInputType.number,
+                        controller: controllers[item.id],
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         onEditingComplete: () {
-                          _onFieldEditingComplete(accountId);
-                        },
-                        onChanged: (value) {
-                          // No hacer nada mientras se escribe
+                          _onFieldEditingComplete(item.id);
                         },
                         decoration: const InputDecoration(
                           labelText: 'Porcentaje (%)',
@@ -477,18 +373,20 @@ class _DistributeFundPercentageScreenState
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: canContinue ? AppTheme.success : AppTheme.danger,
+                    color: remaining.abs() <= 0.1
+                        ? AppTheme.success
+                        : AppTheme.danger,
                   ),
                 ),
               ],
             ),
           ),
 
-          // Botón "Guardar Fondo"
+          // Botón de abajo
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
-              onPressed: canContinue ? _saveFund : null,
+              onPressed: canContinue ? _listo : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: canContinue
                     ? AppTheme.buttonPurple
@@ -498,9 +396,12 @@ class _DistributeFundPercentageScreenState
                   vertical: 15,
                 ),
               ),
-              child: const Text(
-                'Guardar Fondo',
-                style: TextStyle(fontSize: 16, color: AppTheme.textWhite),
+              child: Text(
+                widget.textoBoton,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: AppTheme.textWhite,
+                ),
               ),
             ),
           ),

@@ -4,7 +4,6 @@ import 'package:asend/models/fund.dart';
 import 'package:asend/bank/screens/add_fund_name_screen.dart';
 import 'package:asend/bank/screens/add_amount_to_fund_screen.dart';
 import 'package:asend/bank/screens/select_accounts_for_fund_screen.dart';
-import 'package:asend/bank/services/account_service.dart';
 import 'package:asend/theme/app_theme.dart';
 import 'package:asend/theme/notification_dot.dart';
 
@@ -27,12 +26,10 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
     }
   }
 
-  /// Un fondo que reparte a cuentas eliminadas no deja abonar.
-  /// Ofrece modificarlo (cuentas y porcentajes) o eliminarlo.
+  /// Un fondo con problema (cuentas o Dinero eliminados, o sin reparto
+  /// a Dinero) no deja abonar. Ofrece modificarlo o eliminarlo.
   Future<void> _avisoFondoConProblema(Fund fund) async {
-    final eliminadas = FundService.getCuentasEliminadas(fund.id)
-        .map((fa) => AccountService.getAccountName(fa.accountId))
-        .join(', ');
+    final motivo = FundService.motivoProblema(fund.id) ?? '';
 
     final opcion = await showDialog<String>(
       context: context,
@@ -42,9 +39,9 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
           style: const TextStyle(color: AppTheme.textWhite),
         ),
         content: Text(
-          'Este fondo reparte a cuentas que ya no existen: $eliminadas.\n\n'
-          'Para poder abonarle, modifica sus cuentas y porcentajes, '
-          'o elimínalo.',
+          '$motivo.\n\n'
+          'Para poder abonarle, modifica sus cuentas, su dinero y sus '
+          'porcentajes, o elimínalo.',
           style: const TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
@@ -277,9 +274,8 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
                   itemCount: funds.length,
                   itemBuilder: (context, index) {
                     Fund fund = funds[index];
-                    final conProblema = FundService.tieneCuentaEliminada(
-                      fund.id,
-                    );
+                    final motivo = FundService.motivoProblema(fund.id);
+                    final conProblema = motivo != null;
 
                     return ListTile(
                       title: Text(
@@ -287,9 +283,9 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
                         style: const TextStyle(color: AppTheme.textWhite),
                       ),
                       subtitle: conProblema
-                          ? const Text(
-                              'Tiene cuentas eliminadas',
-                              style: TextStyle(
+                          ? Text(
+                              motivo,
+                              style: const TextStyle(
                                 color: AppTheme.danger,
                                 fontSize: 12,
                               ),
@@ -324,7 +320,7 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
                             PopupMenuItem(
                               value: 'cuentas',
                               child: Text(
-                                'Cuentas y porcentajes',
+                                'Cuentas, dinero y porcentajes',
                                 style: TextStyle(color: AppTheme.textWhite),
                               ),
                             ),

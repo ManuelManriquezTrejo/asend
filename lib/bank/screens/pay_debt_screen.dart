@@ -1,6 +1,7 @@
 import 'package:asend/bank/screens/new_debt_screen.dart';
 import 'package:asend/bank/services/account_service.dart';
 import 'package:asend/bank/services/debt_service.dart';
+import 'package:asend/bank/services/money_service.dart';
 import 'package:asend/models/debt.dart';
 import 'package:asend/models/debt_installment.dart';
 import 'package:asend/theme/app_theme.dart';
@@ -96,7 +97,6 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
     );
     await _recargar();
   }
-
   // ── Pagar ──────────────────────────────────────────────
 
   Future<void> _pagar(List<DebtInstallment> lista) async {
@@ -106,14 +106,21 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
       return;
     }
 
-    final cuentas = AccountService.getAllAccounts();
+    final cuentas = AccountService.getCuentasMovibles();
     if (cuentas.isEmpty) {
       _aviso('Primero crea una cuenta en Banco');
       return;
     }
 
+    final dineros = MoneyService.getAll();
+    if (dineros.isEmpty) {
+      _aviso('Agrega dónde tienes tu dinero en Banco');
+      return;
+    }
+
     final total = cuotas.fold<double>(0, (s, c) => s + c.monto);
     int? cuentaId = DebtService.cuentaPorDefecto();
+    int? dineroId = MoneyService.getUltimoId(MoneyService.enPagoDeuda);
     String? error;
     bool pagando = false;
     bool pagado = false;
@@ -181,6 +188,41 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                             error = null;
                           }),
                   ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '¿De qué dinero sale?',
+                    style: TextStyle(color: AppTheme.textWhite),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<int>(
+                    initialValue: dineroId,
+                    isExpanded: true,
+                    dropdownColor: AppTheme.bgDarkGrey,
+                    hint: const Text(
+                      'Elige de dónde sale',
+                      style: TextStyle(color: AppTheme.textHint),
+                    ),
+                    items: dineros
+                        .map(
+                          (m) => DropdownMenuItem<int>(
+                            value: m.id,
+                            child: Text(
+                              '${m.name} · ${_dinero(m.balance)}',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppTheme.textWhite,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: pagando
+                        ? null
+                        : (id) => setDialogState(() {
+                            dineroId = id;
+                            error = null;
+                          }),
+                  ),
                   if (error != null) ...[
                     const SizedBox(height: 12),
                     Text(
@@ -212,6 +254,13 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                           setDialogState(() => error = 'Elige una cuenta');
                           return;
                         }
+                        final dinero = dineroId;
+                        if (dinero == null) {
+                          setDialogState(
+                            () => error = 'Elige de qué dinero sale',
+                          );
+                          return;
+                        }
 
                         final navigator = Navigator.of(context);
                         setDialogState(() => pagando = true);
@@ -219,6 +268,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                         final mensaje = await DebtService.pagar(
                           cuotas: cuotas,
                           accountId: id,
+                          moneyId: dinero,
                         );
 
                         if (mensaje != null) {
@@ -247,7 +297,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
     }
     await _recargar();
   }
-
+  
   // ── Cancelar suscripción ───────────────────────────────
 
   Future<void> _cancelarSuscripcion() async {

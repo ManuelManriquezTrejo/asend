@@ -136,8 +136,7 @@ class _TransferScreenState extends State<TransferScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cuentas = AccountService.getAllAccounts();
-
+    final cuentas = AccountService.getCuentasMovibles();
     if (cuentas.length < 2) {
       return Scaffold(
         appBar: AppBar(title: const Text('Movimientos')),

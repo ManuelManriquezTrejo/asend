@@ -11,8 +11,11 @@ import 'package:asend/database/goal_hive_service.dart';
 import 'package:asend/database/gym_hive_service.dart';
 import 'package:asend/database/hive_service.dart';
 import 'package:asend/database/mission_hive_service.dart';
+import 'package:asend/database/money_hive_service.dart';
 import 'package:asend/database/routine_hive_service.dart';
 import 'package:asend/database/store_hive_service.dart';
+import 'package:asend/goals/services/goal_service.dart';
+import 'package:asend/home/widgets/balance_chip.dart';
 import 'package:asend/home/widgets/module_bar.dart';
 import 'package:asend/missions/services/mission_service.dart';
 import 'package:asend/missions/widgets/mission_completion_dialog.dart';
@@ -23,6 +26,7 @@ import 'package:asend/models/mission.dart';
 import 'package:asend/routine/services/day_change_service.dart';
 import 'package:asend/routine/services/habit_history_service.dart';
 import 'package:asend/routine/widgets/habit_completion_dialogs.dart';
+import 'package:asend/settings/screens/settings_screen.dart';
 import 'package:asend/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -63,6 +67,13 @@ void main() async {
   // Inicializar Hive de Deuda
   await DebtHiveService.initializeDebtHive();
 
+  // Inicializar Hive de Dinero
+  await MoneyHiveService.initializeMoneyHive();
+
+  // Crear la cuenta Metas si todavía no existe (necesita Banco, Pagos,
+  // Metas y Dinero ya abiertos)
+  await GoalService.asegurarCuentaMetas();
+
   // Ver datos en consola
   HiveService.printFondos();
   HiveService.printAllData();
@@ -76,6 +87,7 @@ void main() async {
   GymHiveService.printAllData();
   ChartHiveService.printAllData();
   DebtHiveService.printAllData();
+  MoneyHiveService.printAllData();
 
   // Asend es de uso vertical: bloquear la rotación evita
   // los overflow de las pantallas al acostar el teléfono
@@ -233,38 +245,86 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         body: Column(
           children: [
+            
             // 1. Margen superior 5%
             SizedBox(height: MediaQuery.of(context).size.height * 0.05),
 
-            // 2. Título "Bienvenido a Asend"
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Bienvenido a Asend',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.buttonPurple,
+            // 2. Botón de Configuración a la izquierda y título centrado.
+            // El botón vive en una columna de ancho fijo y a la derecha hay
+            // una columna vacía igual: así el título queda centrado en la
+            // pantalla y nunca se encima con el botón.
+            // Al volver de Configuración se redibuja, por si cambió un aviso.
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                SizedBox(
+                  width: 56,
+                  child: Padding(
+                    // 20 = donde empiezan las etiquetas de abajo
+                    padding: const EdgeInsets.only(left: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: const Icon(Icons.menu, color: AppTheme.textGrey),
+                        tooltip: 'Configuración',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsScreen(),
+                            ),
+                          ).then((_) {
+                            if (mounted) setState(() {});
+                          });
+                        },
+                      ),
+                    ),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
+                const Expanded(
+                  child: Text(
+                    'Bienvenido a Asend',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.buttonPurple,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                // Mismo ancho que la columna del botón, para centrar el título
+                const SizedBox(width: 56),
+              ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 4),
 
-            // 3. Mensaje de actividades
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                allCompleted
-                    ? '¡Felicidades! Tuviste un día muy productivo 🎉'
-                    : 'Actividades pendientes',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: AppTheme.textGrey,
-                  fontWeight: FontWeight.w500,
+            // 3. Mensaje de actividades, centrado en el espacio que deja el
+            // saldo, que va pegado al borde derecho
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      allCompleted
+                          ? '¡Felicidades! Tuviste un día muy productivo 🎉'
+                          : 'Actividades pendientes',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: AppTheme.textGrey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
+                // Sin const: así se vuelve a dibujar con el saldo al día
+                // cada vez que el inicio se redibuja
+                // ignore: prefer_const_constructors
+                BalanceChip(),
+              ],
             ),
             const SizedBox(height: 16),
 

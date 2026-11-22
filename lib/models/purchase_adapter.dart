@@ -19,6 +19,15 @@ class PurchaseAdapter extends TypeAdapter<Purchase> {
     final accountId = reader.readInt();
     final fechaMs = reader.readInt();
 
+    // El método de pago va al final. Las compras guardadas antes de que
+    // existiera no traen más bytes, así que se leen con moneyId null
+    // sin tener que borrar la caja.
+    int? moneyId;
+    if (reader.availableBytes > 0) {
+      final tieneMoney = reader.readBool();
+      moneyId = tieneMoney ? reader.readInt() : null;
+    }
+
     return Purchase(
       id: id,
       nombre: nombre,
@@ -26,6 +35,7 @@ class PurchaseAdapter extends TypeAdapter<Purchase> {
       nota: nota,
       accountId: accountId,
       fecha: DateTime.fromMillisecondsSinceEpoch(fechaMs),
+      moneyId: moneyId,
     );
   }
 
@@ -42,5 +52,10 @@ class PurchaseAdapter extends TypeAdapter<Purchase> {
 
     writer.writeInt(obj.accountId);
     writer.writeInt(obj.fecha.millisecondsSinceEpoch);
+
+    writer.writeBool(obj.moneyId != null);
+    if (obj.moneyId != null) {
+      writer.writeInt(obj.moneyId!);
+    }
   }
 }

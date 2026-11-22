@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:asend/models/account.dart';
 import 'package:asend/models/account_history.dart';
 import 'package:asend/database/hive_service.dart';
+import 'package:asend/database/money_hive_service.dart';
 
 class AccountService {
   static const String boxName = 'accounts';
@@ -98,6 +99,34 @@ class AccountService {
       await box.put(accountId, account);
     }
   }
+    // ── Cuenta fija Metas ──────────────────────────────────
+
+  /// Clave en money_settings del id de la cuenta Metas.
+  static const String _claveCuentaMetas = 'cuentaMetasId';
+
+  /// Id de la cuenta Metas, o null si todavía no se crea.
+  /// La crea GoalService.asegurarCuentaMetas al arrancar la app.
+  static int? getCuentaMetasId() {
+    final id = MoneyHiveService.getSettingsBox().get(_claveCuentaMetas);
+    return id is int ? id : null;
+  }
+
+  static Future<void> setCuentaMetasId(int id) async {
+    await MoneyHiveService.getSettingsBox().put(_claveCuentaMetas, id);
+  }
+
+  /// True si es la cuenta Metas. Esa cuenta solo la mueve Metas: no se
+  /// puede eliminar ni meter o sacar dinero a mano, solo renombrar.
+  static bool esCuentaMetas(int accountId) =>
+      accountId == getCuentaMetasId();
+
+  /// Cuentas activas que se pueden elegir para mover dinero: todas
+  /// menos Metas. Para listas de selección (Tienda, Pagar, Fondos,
+  /// transferencias, retiros, Pagos).
+  static List<Account> getCuentasMovibles() {
+    return getAllAccounts().where((c) => !esCuentaMetas(c.id)).toList();
+  }
+  
   /// True si el saldo es 0. Los repartos por porcentaje pueden dejar
   /// fracciones menores a medio centavo, que en pantalla ya se ven
   /// como \$0.00; esas también cuentan como 0.

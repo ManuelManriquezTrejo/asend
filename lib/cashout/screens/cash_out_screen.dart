@@ -38,8 +38,7 @@ class _CashOutScreenState extends State<CashOutScreen> {
 
   /// Muestra las cuentas para elegir una
   Future<void> _seleccionarCuenta({required bool esPaga}) async {
-    final cuentas = AccountService.getAllAccounts();
-
+    final cuentas = AccountService.getCuentasMovibles();
     if (cuentas.isEmpty) {
       _aviso('No hay cuentas creadas en el Banco', error: true);
       return;

@@ -307,23 +307,35 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
             texto: 'Cambiar nombre',
             onTap: () => _cambiarNombre(cuenta),
           ),
-          _opcion(
-            icono: Icons.south_west,
-            texto: 'Ingreso',
-            onTap: () => _ingresar(cuenta),
-          ),
-          _opcion(
-            icono: Icons.arrow_outward,
-            texto: 'Retirar',
-            onTap: () => _retirar(cuenta),
-          ),
-          const SizedBox(height: 24),
-          _opcion(
-            icono: Icons.delete_outline,
-            texto: 'Eliminar cuenta',
-            color: AppTheme.danger,
-            onTap: () => _eliminar(cuenta),
-          ),
+          // La cuenta Metas solo se renombra: su saldo lo mueve Metas
+          if (AccountService.esCuentaMetas(cuenta.id))
+            const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Text(
+                'Esta cuenta se mueve sola al abonar o retirar en Metas',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
+              ),
+            )
+          else ...[
+            _opcion(
+              icono: Icons.south_west,
+              texto: 'Ingreso',
+              onTap: () => _ingresar(cuenta),
+            ),
+            _opcion(
+              icono: Icons.arrow_outward,
+              texto: 'Retirar',
+              onTap: () => _retirar(cuenta),
+            ),
+            const SizedBox(height: 24),
+            _opcion(
+              icono: Icons.delete_outline,
+              texto: 'Eliminar cuenta',
+              color: AppTheme.danger,
+              onTap: () => _eliminar(cuenta),
+            ),
+          ],
         ],
       ),
     );

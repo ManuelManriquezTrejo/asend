@@ -3,6 +3,7 @@ import 'package:asend/models/fund.dart';
 import 'package:asend/models/fund_account.dart';
 import 'package:asend/bank/services/fund_service.dart';
 import 'package:asend/bank/services/account_service.dart';
+import 'package:asend/bank/services/money_service.dart';
 import 'package:asend/theme/app_theme.dart';
 
 class AddAmountToFundScreen extends StatefulWidget {
@@ -53,13 +54,14 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
       );
       return;
     }
-    // Un fondo con cuentas eliminadas perdería esa parte del dinero
-    if (FundService.tieneCuentaEliminada(widget.fund.id)) {
+    // Un fondo con cuentas o Dinero eliminados, o sin reparto a Dinero,
+    // perdería parte del dinero o lo dejaría descuadrado
+    final problema = FundService.motivoProblema(widget.fund.id);
+    if (problema != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Este fondo tiene cuentas eliminadas. '
-            'Modifícalo o elimínalo antes de abonar',
+            '$problema. Modifica el fondo antes de abonar',
           ),
         ),
       );
@@ -99,6 +101,19 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
       if (ok) repartidas++;
     }
 
+    // El mismo monto se reparte también entre el Dinero del fondo
+    for (final fm in FundService.getFundMoneyByFundId(widget.fund.id)) {
+      final parte = amount * (fm.percentage / 100);
+      if (parte <= 0) continue;
+
+      await MoneyService.aplicarMovimiento(
+        moneyId: fm.moneyId,
+        monto: parte, // entra
+        concepto: 'Abono: ${widget.fund.name}',
+        referenciaId: widget.fund.id,
+      );
+    }
+
     if (!mounted) return;
 
     if (repartidas == 0) {
@@ -123,7 +138,8 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
             ),
           ),
           content: const Text(
-            'El dinero se ha distribuido correctamente entre las cuentas.',
+            'El dinero se ha distribuido correctamente entre las cuentas '
+            'y tu dinero.',
             style: TextStyle(color: AppTheme.textGrey),
           ),
           actions: [

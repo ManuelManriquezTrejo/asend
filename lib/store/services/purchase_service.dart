@@ -1,16 +1,25 @@
 import 'package:asend/bank/services/account_service.dart';
+import 'package:asend/bank/services/money_service.dart';
 import 'package:asend/cashout/services/cash_out_config_service.dart';
 import 'package:asend/database/store_hive_service.dart';
 import 'package:asend/models/purchase.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 /// Toda la lógica de Tienda.
-/// Cada compra guarda de qué cuenta salió el dinero. Los movimientos
-/// pasan por AccountService.aplicarMovimiento para que queden en
-/// AccountHistory.
+/// Cada compra guarda de qué cuenta salió el dinero y con qué método de
+/// pago (un elemento de Dinero). Los movimientos pasan por
+/// AccountService.aplicarMovimiento y MoneyService.aplicarMovimiento
+/// para que queden en AccountHistory y MoneyHistory.
+///
+/// Antes de mover dinero se valida TODO: si la cuenta o el Dinero no
+/// alcanzan, no se mueve nada en ninguno de los dos.
+///
+/// Las compras de antes de Dinero tienen moneyId null: al editarlas o
+/// eliminarlas solo se mueve la cuenta.
 ///
 /// Eliminar una compra la borra de verdad de la caja, pero el cobro y
-/// la devolución siguen en AccountHistory: la cadena de saldos de la
-/// cuenta nunca se rompe.
+/// la devolución siguen en los historiales: la cadena de saldos nunca
+/// se rompe.
 ///
 /// Los métodos que mueven dinero devuelven String?:
 ///   null  = todo salió bien
@@ -81,17 +90,39 @@ class PurchaseService {
   // CUENTAS
   // ─────────────────────────────────────────────
 
+  /// Clave en store_meta de la última cuenta usada en Tienda.
+  static const String _claveUltimaCuenta = 'ultimaCuentaId';
+
   /// Cuenta que viene marcada al abrir el formulario de compra.
-  /// Primero la receptora de Pagos; si no existe o fue eliminada,
-  /// la primera cuenta activa de Banco. null si no hay ninguna.
+  /// Primero la última usada en Tienda; si no hay o fue eliminada, la
+  /// receptora de Pagos; si tampoco, la primera cuenta activa de Banco.
+  /// null si no hay ninguna.
   static int? getCuentaPreseleccionada() {
+    final ultima = Hive.box(StoreHiveService.storeMetaBox).get(
+      _claveUltimaCuenta,
+    );
+    if (ultima is int && AccountService.getAccountById(ultima) != null) {
+      return ultima;
+    }
+
     final recibeId = CashOutConfigService.getConfigSync()?.cuentaRecibeId;
     if (recibeId != null && AccountService.getAccountById(recibeId) != null) {
       return recibeId;
     }
 
-    final cuentas = AccountService.getAllAccounts();
-    return cuentas.isEmpty ? null : cuentas.first.id;
+    final cuentas = AccountService.getCuentasMovibles();    return cuentas.isEmpty ? null : cuentas.first.id;
+  }
+
+  /// Guarda la cuenta y el Dinero usados para que el siguiente
+  /// formulario los traiga marcados.
+  static Future<void> _recordarUsados(int accountId, int? moneyId) async {
+    await Hive.box(StoreHiveService.storeMetaBox).put(
+      _claveUltimaCuenta,
+      accountId,
+    );
+    if (moneyId != null) {
+      await MoneyService.setUltimoId(MoneyService.enTienda, moneyId);
+    }
   }
 
   /// Saldo de una cuenta. null si no existe o fue eliminada.
@@ -181,30 +212,41 @@ class PurchaseService {
   // ESCRITURA
   // ─────────────────────────────────────────────
 
-  /// Registra una compra y descuenta el precio de la cuenta indicada.
-  /// Si no hay saldo, no se registra nada.
+  /// Registra una compra: descuenta el precio de la cuenta y del
+  /// método de pago. Si alguno no alcanza, no se registra nada.
   static Future<String?> agregar({
     required String nombre,
     required int precio,
     String? nota,
     required int accountId,
+    required int moneyId,
   }) async {
     if (precio <= 0) return 'El precio debe ser mayor a 0';
 
     final cuenta = AccountService.getAccountById(accountId);
     if (cuenta == null) return 'Esa cuenta ya no existe';
 
+    final dinero = MoneyService.getById(moneyId);
+    if (dinero == null) return 'Ese método de pago ya no existe';
+
+    // Validar los dos antes de mover cualquiera
+    if (cuenta.balance < precio) return 'Saldo insuficiente en ${cuenta.name}';
+    if (dinero.balance < precio) return 'Saldo insuficiente en ${dinero.name}';
+
     final nuevoId = await StoreHiveService.nextPurchaseId();
 
-    // Primero el dinero: si falla, no queda una compra huérfana
-    final ok = await AccountService.aplicarMovimiento(
+    await AccountService.aplicarMovimiento(
       accountId: accountId,
       monto: -precio.toDouble(),
       concepto: 'Compra: $nombre',
       referenciaId: nuevoId,
     );
-
-    if (!ok) return 'Saldo insuficiente en ${cuenta.name}';
+    await MoneyService.aplicarMovimiento(
+      moneyId: moneyId,
+      monto: -precio.toDouble(),
+      concepto: 'Compra: $nombre',
+      referenciaId: nuevoId,
+    );
 
     await StoreHiveService.getPurchasesBox().put(
       nuevoId,
@@ -215,25 +257,32 @@ class PurchaseService {
         nota: nota,
         accountId: accountId,
         fecha: DateTime.now(),
+        moneyId: moneyId,
       ),
     );
 
+    await _recordarUsados(accountId, moneyId);
     return null;
   }
 
-  /// Edita nombre, precio, nota o cuenta.
+  /// Edita nombre, precio, nota, cuenta o método de pago.
   ///
-  /// Si cambia la cuenta, se cobra COMPLETO a la nueva antes de devolver
-  /// nada a la vieja. Si la nueva no alcanza, no se toca absolutamente
-  /// nada y la compra queda igual.
+  /// Cuenta y método se tratan igual, cada uno por su lado:
+  /// - si cambió, se cobra COMPLETO al nuevo y se devuelve al viejo;
+  /// - si es el mismo, solo se mueve la diferencia de precio.
   ///
-  /// Si la cuenta es la misma, solo se mueve la diferencia de precio.
+  /// Todo se valida antes de mover nada: si algo no alcanza o el
+  /// original fue eliminado, la compra queda igual.
+  ///
+  /// En compras sin método (de antes de Dinero) se ignora [moneyId] y
+  /// solo se mueve la cuenta.
   static Future<String?> editar({
     required int purchaseId,
     required String nombre,
     required int precio,
     String? nota,
     required int accountId,
+    int? moneyId,
   }) async {
     if (precio <= 0) return 'El precio debe ser mayor a 0';
 
@@ -241,48 +290,96 @@ class PurchaseService {
     final compra = box.get(purchaseId);
     if (compra == null) return 'La compra ya no existe';
 
+    final conMetodo = compra.moneyId != null;
+
+    // ── Validar cuenta ──
     final cuentaNueva = AccountService.getAccountById(accountId);
     if (cuentaNueva == null) return 'Esa cuenta ya no existe';
 
-    final cambioDeCuenta = accountId != compra.accountId;
-
-    if (cambioDeCuenta) {
-      // La cuenta vieja tiene que poder recibir la devolución.
-      // Si fue eliminada, mejor no mover nada.
-      final cuentaVieja = AccountService.getAccountById(compra.accountId);
-      if (cuentaVieja == null) {
+    final cambioCuenta = accountId != compra.accountId;
+    if (cambioCuenta) {
+      if (AccountService.getAccountById(compra.accountId) == null) {
         return 'La cuenta original fue eliminada, no se puede cambiar';
       }
+      if (cuentaNueva.balance < precio) {
+        return 'Saldo insuficiente en ${cuentaNueva.name}';
+      }
+    } else {
+      final dif = precio - compra.precio;
+      if (dif > 0 && cuentaNueva.balance < dif) {
+        return 'Saldo insuficiente en ${cuentaNueva.name}';
+      }
+    }
 
-      // Cobrar primero a la nueva
-      final cobrada = await AccountService.aplicarMovimiento(
+    // ── Validar método de pago ──
+    bool cambioMetodo = false;
+    if (conMetodo) {
+      if (moneyId == null) return 'Elige un método de pago';
+
+      final dineroNuevo = MoneyService.getById(moneyId);
+      if (dineroNuevo == null) return 'Ese método de pago ya no existe';
+
+      cambioMetodo = moneyId != compra.moneyId;
+      if (cambioMetodo) {
+        if (MoneyService.getById(compra.moneyId!) == null) {
+          return 'El método original fue eliminado, no se puede cambiar';
+        }
+        if (dineroNuevo.balance < precio) {
+          return 'Saldo insuficiente en ${dineroNuevo.name}';
+        }
+      } else {
+        final dif = precio - compra.precio;
+        if (dif > 0 && dineroNuevo.balance < dif) {
+          return 'Saldo insuficiente en ${dineroNuevo.name}';
+        }
+      }
+    }
+
+    // ── Mover cuenta ──
+    if (cambioCuenta) {
+      await AccountService.aplicarMovimiento(
         accountId: accountId,
         monto: -precio.toDouble(),
         concepto: 'Compra: $nombre',
         referenciaId: compra.id,
       );
-
-      if (!cobrada) return 'Saldo insuficiente en ${cuentaNueva.name}';
-
-      // Ya cobrada, devolver a la vieja el precio anterior
       await AccountService.aplicarMovimiento(
         accountId: compra.accountId,
         monto: compra.precio.toDouble(),
         concepto: 'Compra movida a otra cuenta: ${compra.nombre}',
         referenciaId: compra.id,
       );
-    } else {
-      final diferencia = precio - compra.precio;
+    } else if (precio != compra.precio) {
+      await AccountService.aplicarMovimiento(
+        accountId: accountId,
+        monto: -(precio - compra.precio).toDouble(), // sube = sale más
+        concepto: 'Ajuste de compra: $nombre',
+        referenciaId: compra.id,
+      );
+    }
 
-      if (diferencia != 0) {
-        final ok = await AccountService.aplicarMovimiento(
-          accountId: accountId,
-          monto: -diferencia.toDouble(), // sube = sale más, baja = regresa
+    // ── Mover método de pago ──
+    if (conMetodo) {
+      if (cambioMetodo) {
+        await MoneyService.aplicarMovimiento(
+          moneyId: moneyId!,
+          monto: -precio.toDouble(),
+          concepto: 'Compra: $nombre',
+          referenciaId: compra.id,
+        );
+        await MoneyService.aplicarMovimiento(
+          moneyId: compra.moneyId!,
+          monto: compra.precio.toDouble(),
+          concepto: 'Compra movida a otro método: ${compra.nombre}',
+          referenciaId: compra.id,
+        );
+      } else if (precio != compra.precio) {
+        await MoneyService.aplicarMovimiento(
+          moneyId: moneyId!,
+          monto: -(precio - compra.precio).toDouble(),
           concepto: 'Ajuste de compra: $nombre',
           referenciaId: compra.id,
         );
-
-        if (!ok) return 'Saldo insuficiente en ${cuentaNueva.name}';
       }
     }
 
@@ -290,34 +387,46 @@ class PurchaseService {
     compra.precio = precio;
     compra.nota = nota;
     compra.accountId = accountId;
+    if (conMetodo) compra.moneyId = moneyId;
     await box.put(compra.id, compra);
 
+    await _recordarUsados(accountId, conMetodo ? moneyId : null);
     return null;
   }
 
-  /// Borra la compra de verdad y devuelve el dinero a su cuenta.
-  /// Si la devolución falla, no se borra nada.
+  /// Borra la compra de verdad y devuelve el dinero a su cuenta y a su
+  /// método de pago. Si alguno de los dos fue eliminado, no se borra
+  /// nada.
   static Future<String?> eliminar(int purchaseId) async {
     final box = StoreHiveService.getPurchasesBox();
     final compra = box.get(purchaseId);
     if (compra == null) return 'La compra ya no existe';
 
-    final cuenta = AccountService.getAccountById(compra.accountId);
-    if (cuenta == null) {
+    if (AccountService.getAccountById(compra.accountId) == null) {
       return 'La cuenta de esta compra fue eliminada, no se puede devolver';
     }
+    final metodoId = compra.moneyId;
+    if (metodoId != null && MoneyService.getById(metodoId) == null) {
+      return 'El método de pago de esta compra fue eliminado, '
+          'no se puede devolver';
+    }
 
-    final ok = await AccountService.aplicarMovimiento(
+    await AccountService.aplicarMovimiento(
       accountId: compra.accountId,
       monto: compra.precio.toDouble(), // entra
       concepto: 'Compra eliminada: ${compra.nombre}',
       referenciaId: compra.id,
     );
-
-    if (!ok) return 'No se pudo devolver el dinero a la cuenta';
+    if (metodoId != null) {
+      await MoneyService.aplicarMovimiento(
+        moneyId: metodoId,
+        monto: compra.precio.toDouble(),
+        concepto: 'Compra eliminada: ${compra.nombre}',
+        referenciaId: compra.id,
+      );
+    }
 
     await box.delete(compra.id);
-
     return null;
   }
 }

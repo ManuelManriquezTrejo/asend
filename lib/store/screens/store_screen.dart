@@ -1,13 +1,14 @@
 import 'package:asend/bank/services/account_service.dart';
+import 'package:asend/bank/services/money_service.dart';
 import 'package:asend/goals/screens/goals_screen.dart';
 import 'package:asend/models/account.dart';
+import 'package:asend/models/money_account.dart';
 import 'package:asend/models/purchase.dart';
 import 'package:asend/store/services/purchase_service.dart';
 import 'package:asend/store/screens/purchase_history_screen.dart';
 import 'package:asend/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 
 /// Lo que devuelve el formulario de compra.
 /// Con nombre propio para evitar la ambigüedad de parseo que provoca
@@ -17,6 +18,7 @@ typedef _DatosCompra = ({
   int precio,
   String? nota,
   int accountId,
+  int? moneyId,
 });
 
 class StoreScreen extends StatefulWidget {
@@ -38,13 +40,13 @@ class _StoreScreenState extends State<StoreScreen> {
   }
 
   /// Formulario de compra. Sirve para agregar y para editar.
-  /// Devuelve (nombre, precio, nota, accountId) o null si cancela.
+  /// Devuelve (nombre, precio, nota, accountId, moneyId) o null si
+  /// cancela. moneyId es null solo al editar una compra sin método.
   Future<_DatosCompra?> _formulario({
     required String titulo,
     Purchase? compra,
   }) async {
-    final cuentas = AccountService.getAllAccounts();
-
+    final cuentas = AccountService.getCuentasMovibles();
     // Al editar, la cuenta de la compra debe aparecer en la lista aunque
     // haya sido eliminada de Banco; si no, el desplegable quedaría con un
     // valor que no existe entre sus opciones y Flutter lanza excepción.
@@ -55,6 +57,19 @@ class _StoreScreenState extends State<StoreScreen> {
       if (vieja != null) cuentas.insert(0, vieja);
     }
 
+    // Las compras de antes de Dinero no tienen método y no se les pide
+    final pideMetodo = compra == null || compra.moneyId != null;
+
+    final dineros = MoneyService.getAll();
+
+    // Igual que con la cuenta: si el método de la compra fue eliminado,
+    // se agrega a la lista para que el desplegable tenga ese valor
+    if (compra?.moneyId != null &&
+        !dineros.any((m) => m.id == compra!.moneyId)) {
+      final vieja = MoneyService.getByIdIncluyendoEliminados(compra!.moneyId!);
+      if (vieja != null) dineros.insert(0, vieja);
+    }
+
     final nombreCtrl = TextEditingController(text: compra?.nombre ?? '');
     final precioCtrl = TextEditingController(
       text: compra == null ? '' : '${compra.precio}',
@@ -62,15 +77,24 @@ class _StoreScreenState extends State<StoreScreen> {
     final notaCtrl = TextEditingController(text: compra?.nota ?? '');
 
     // Al editar, la cuenta de la compra; al agregar, la preseleccionada
-    int cuentaId = compra?.accountId ?? PurchaseService.getCuentaPreseleccionada()!;
+    int cuentaId =
+        compra?.accountId ?? PurchaseService.getCuentaPreseleccionada()!;
 
-        final resultado = await showDialog<_DatosCompra>(
+    // Al editar, el método de la compra; al agregar, el último usado
+    int? metodoId = pideMetodo
+        ? (compra?.moneyId ?? MoneyService.getUltimoId(MoneyService.enTienda))
+        : null;
+
+    final resultado = await showDialog<_DatosCompra>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         // StatefulBuilder para que el saldo se actualice al cambiar
         // de cuenta sin reconstruir toda la pantalla de atrás
         builder: (ctx, setDialogState) {
           final saldo = PurchaseService.getSaldoCuenta(cuentaId);
+          final saldoMetodo = metodoId == null
+              ? null
+              : MoneyService.getById(metodoId!)?.balance;
 
           return AlertDialog(
             title: Text(
@@ -122,6 +146,67 @@ class _StoreScreenState extends State<StoreScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
+
+                  // Método de pago: de qué elemento de Dinero sale
+                  if (pideMetodo) ...[
+                    DropdownButtonFormField<int>(
+                      initialValue: metodoId,
+                      isExpanded: true,
+                      dropdownColor: AppTheme.bgDarkGrey,
+                      style: const TextStyle(color: AppTheme.textWhite),
+                      decoration: const InputDecoration(
+                        labelText: 'Método de pago',
+                        labelStyle: TextStyle(color: AppTheme.textHint),
+                      ),
+                      items: dineros
+                          .map(
+                            (MoneyAccount m) => DropdownMenuItem<int>(
+                              value: m.id,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    m.tipo == MoneyService.efectivo
+                                        ? Icons.payments
+                                        : Icons.credit_card,
+                                    color: AppTheme.textHint,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      m.name,
+                                      style: const TextStyle(
+                                        color: AppTheme.textWhite,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (valor) {
+                        if (valor == null) return;
+                        setDialogState(() => metodoId = valor);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      saldoMetodo == null
+                          ? 'Método eliminado'
+                          : 'Disponible: ${saldoMetodo.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        color: AppTheme.textGrey,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ] else
+                    const Text(
+                      'Sin método (compra anterior)',
+                      style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
+                    ),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: nombreCtrl,
                     autofocus: true,
@@ -168,14 +253,16 @@ class _StoreScreenState extends State<StoreScreen> {
                   final precio = int.tryParse(precioCtrl.text.trim());
                   final nota = notaCtrl.text.trim();
 
-                  // Nombre y precio son obligatorios
+                  // Nombre y precio son obligatorios, y el método si se pide
                   if (nombre.isEmpty || precio == null || precio <= 0) return;
+                  if (pideMetodo && metodoId == null) return;
 
                   Navigator.pop(ctx, (
                     nombre: nombre,
                     precio: precio,
                     nota: nota.isEmpty ? null : nota,
                     accountId: cuentaId,
+                    moneyId: metodoId,
                   ));
                 },
                 child: const Text(
@@ -206,6 +293,12 @@ class _StoreScreenState extends State<StoreScreen> {
       return;
     }
 
+    // Sin Dinero no hay método de pago
+    if (MoneyService.getAll().isEmpty) {
+      _aviso('Agrega dónde tienes tu dinero en Banco');
+      return;
+    }
+
     final datos = await _formulario(titulo: 'Registrar compra');
     if (datos == null || !mounted) return;
 
@@ -214,6 +307,7 @@ class _StoreScreenState extends State<StoreScreen> {
       precio: datos.precio,
       nota: datos.nota,
       accountId: datos.accountId,
+      moneyId: datos.moneyId!,
     );
 
     if (!mounted) return;
@@ -236,6 +330,7 @@ class _StoreScreenState extends State<StoreScreen> {
       precio: datos.precio,
       nota: datos.nota,
       accountId: datos.accountId,
+      moneyId: datos.moneyId,
     );
 
     if (!mounted) return;
@@ -259,7 +354,8 @@ class _StoreScreenState extends State<StoreScreen> {
         content: Text(
           '"${compra.nombre}" por ${compra.precio}.\n\n'
           'El dinero regresará a '
-          '${AccountService.getAccountName(compra.accountId)}.',
+          '${AccountService.getAccountName(compra.accountId)}'
+          '${compra.moneyId == null ? '' : ' y a ${MoneyService.getName(compra.moneyId!)}'}.',
           style: const TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
@@ -338,15 +434,20 @@ class _StoreScreenState extends State<StoreScreen> {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            subtitle: c.nota == null
-                                ? null
-                                : Text(
-                                    c.nota!,
-                                    style: const TextStyle(
-                                      color: AppTheme.textGrey,
-                                      fontSize: 12,
-                                    ),
-                                  ),
+                            // Cuenta y método de pago, y la nota si hay
+                            subtitle: Text(
+                              [
+                                AccountService.getAccountName(c.accountId) +
+                                    (c.moneyId == null
+                                        ? ''
+                                        : ' · ${MoneyService.getName(c.moneyId!)}'),
+                                if (c.nota != null) c.nota!,
+                              ].join('\n'),
+                              style: const TextStyle(
+                                color: AppTheme.textGrey,
+                                fontSize: 12,
+                              ),
+                            ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [

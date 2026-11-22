@@ -53,8 +53,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
 
     if (!mounted) return;
     setState(() {
-      _cuentas = AccountService.getAllAccounts();
-      _conceptos = WithdrawConceptService.getAll();
+      _cuentas = AccountService.getCuentasMovibles();      _conceptos = WithdrawConceptService.getAll();
       _cargando = false;
 
       // Preseleccionar la cuenta solo si sigue activa

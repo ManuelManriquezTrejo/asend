@@ -1,7 +1,10 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:asend/bank/services/account_service.dart';
+import 'package:asend/bank/services/money_service.dart';
+import 'package:asend/database/money_hive_service.dart';
 import 'package:asend/models/fund.dart';
 import 'package:asend/models/fund_account.dart';
+import 'package:asend/models/fund_money.dart';
 
 class FundService {
   static const String fundsBoxName = 'funds';
@@ -86,8 +89,95 @@ class FundService {
     return fundAccounts;
   }
 
-  // Actualizar los porcentajes de un fondo (reemplaza los antiguos)
-    /// Relaciones del fondo que apuntan a cuentas ya eliminadas de Banco.
+  // ── Reparto a Dinero ───────────────────────────────────
+
+  /// Partes del fondo que van a elementos de Dinero.
+  static List<FundMoney> getFundMoneyByFundId(int fundId) {
+    final lista = MoneyHiveService.getFundMoneyBox().values
+        .where((fm) => fm.fundId == fundId)
+        .toList();
+    lista.sort((a, b) => a.id.compareTo(b.id));
+    return lista;
+  }
+
+  /// Reemplaza el reparto a Dinero de un fondo.
+  /// [porcentajes] = {moneyId: porcentaje}.
+  static Future<void> guardarRepartoDinero({
+    required int fundId,
+    required Map<int, double> porcentajes,
+  }) async {
+    await _borrarDineroDeFondo(fundId);
+
+    final box = MoneyHiveService.getFundMoneyBox();
+    for (final entrada in porcentajes.entries) {
+      final nuevoId = _siguienteId(box);
+      await box.put(
+        nuevoId,
+        FundMoney(
+          id: nuevoId,
+          fundId: fundId,
+          moneyId: entrada.key,
+          percentage: entrada.value,
+        ),
+      );
+    }
+  }
+
+  static Future<void> _borrarDineroDeFondo(int fundId) async {
+    final box = MoneyHiveService.getFundMoneyBox();
+    final llaves = box.keys
+        .where((k) => box.get(k)?.fundId == fundId)
+        .toList();
+    for (final k in llaves) {
+      await box.delete(k);
+    }
+  }
+
+  // ── Crear con cuentas y Dinero ─────────────────────────
+
+  /// Crea un fondo con su reparto a Cuentas y a Dinero.
+  /// Cada mapa es {id: porcentaje} y debe sumar 100.
+  static Future<void> crearFondo({
+    required String nombre,
+    required Map<int, double> cuentas,
+    required Map<int, double> dineros,
+  }) async {
+    final fundsBox = Hive.box(fundsBoxName);
+    final fundId = _siguienteId(fundsBox);
+
+    await fundsBox.put(
+      fundId,
+      Fund(id: fundId, name: nombre, createdAt: DateTime.now()),
+    );
+
+    for (final entrada in cuentas.entries) {
+      await addFundAccount(
+        fundId: fundId,
+        accountId: entrada.key,
+        percentage: entrada.value,
+      );
+    }
+    await guardarRepartoDinero(fundId: fundId, porcentajes: dineros);
+  }
+
+  /// Reemplaza el reparto a Cuentas y a Dinero de un fondo existente.
+  static Future<void> modificarFondo({
+    required int fundId,
+    required Map<int, double> cuentas,
+    required Map<int, double> dineros,
+  }) async {
+    await updateFundAccountPercentages(
+      fundId: fundId,
+      accountPercentages: cuentas.entries
+          .map((e) => {'accountId': e.key, 'percentage': e.value})
+          .toList(),
+    );
+    await guardarRepartoDinero(fundId: fundId, porcentajes: dineros);
+  }
+
+  // ── Fondos con problema ────────────────────────────────
+
+  /// Relaciones del fondo que apuntan a cuentas ya eliminadas de Banco.
   /// Abonar a ese fondo perdería esa parte del dinero.
   static List<FundAccount> getCuentasEliminadas(int fundId) {
     return getFundAccountsByFundId(fundId)
@@ -99,10 +189,47 @@ class FundService {
   static bool tieneCuentaEliminada(int fundId) =>
       getCuentasEliminadas(fundId).isNotEmpty;
 
+  /// Repartos a Dinero que apuntan a elementos ya eliminados.
+  static List<FundMoney> getDineroEliminado(int fundId) {
+    return getFundMoneyByFundId(fundId)
+        .where((fm) => MoneyService.getById(fm.moneyId) == null)
+        .toList();
+  }
+
+  /// Qué le falta al fondo para poder abonarle, o null si está bien.
+  /// Los fondos creados antes de Dinero no tienen reparto a Dinero.
+  static String? motivoProblema(int fundId) {
+    final cuentas = getCuentasEliminadas(fundId);
+    if (cuentas.isNotEmpty) {
+      final nombres = cuentas
+          .map((fa) => AccountService.getAccountName(fa.accountId))
+          .join(', ');
+      return 'Reparte a cuentas que ya no existen: $nombres';
+    }
+
+    if (getFundMoneyByFundId(fundId).isEmpty) {
+      return 'Todavía no reparte a Dinero';
+    }
+
+    final dineros = getDineroEliminado(fundId);
+    if (dineros.isNotEmpty) {
+      final nombres = dineros
+          .map((fm) => MoneyService.getName(fm.moneyId))
+          .join(', ');
+      return 'Reparte a Dinero que ya no existe: $nombres';
+    }
+    return null;
+  }
+
+  /// True si el fondo no se puede abonar hasta modificarlo.
+  static bool tieneProblema(int fundId) => motivoProblema(fundId) != null;
+
   /// True si algún fondo activo necesita revisión. Enciende el punto
   /// rojo del botón de Fondos.
   static bool hayFondosConProblema() =>
-      getAllFunds().any((f) => tieneCuentaEliminada(f.id));
+      getAllFunds().any((f) => tieneProblema(f.id));
+
+  // Actualizar los porcentajes de un fondo (reemplaza los antiguos)
   static Future<void> updateFundAccountPercentages({
     required int fundId,
     required List<Map<String, dynamic>> accountPercentages,
@@ -185,6 +312,7 @@ class FundService {
 
       // El fondo ya no se usa, sus porcentajes tampoco
       await _borrarRelacionesDeFondo(fundId);
+      await _borrarDineroDeFondo(fundId);
     }
   }
 }
