@@ -110,9 +110,9 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
                     // Botón ± por si el teclado no trae el signo menos
                     IconButton(
                       tooltip: 'Cambiar signo',
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.exposure,
-                        color: AppTheme.buttonPurple,
+                        color: AppTheme.primary,
                       ),
                       onPressed: () {
                         final texto = pesoCtrl.text.trim();
@@ -137,14 +137,14 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
                       selected: elegida,
                       onSelected: (_) => setDialogState(() => unidad = u),
                       backgroundColor: AppTheme.bgDark,
-                      selectedColor: AppTheme.buttonPurple,
+                      selectedColor: AppTheme.primary,
                       labelStyle: TextStyle(
                         color: elegida ? AppTheme.textWhite : AppTheme.textGrey,
                         fontSize: 13,
                       ),
                       side: BorderSide(
                         color: elegida
-                            ? AppTheme.buttonPurple
+                            ? AppTheme.primary
                             : AppTheme.textHint,
                       ),
                     );
@@ -170,7 +170,7 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
                         ),
                       ),
                     ),
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
                         '×',
@@ -198,7 +198,7 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                const Text(
+                Text(
                   'Orden de realización',
                   style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
                 ),
@@ -215,14 +215,14 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
                       onSelected: (_) =>
                           setDialogState(() => orden = posicion),
                       backgroundColor: AppTheme.bgDark,
-                      selectedColor: AppTheme.buttonPurple,
+                      selectedColor: AppTheme.primary,
                       labelStyle: TextStyle(
                         color: elegida ? AppTheme.textWhite : AppTheme.textGrey,
                         fontSize: 13,
                       ),
                       side: BorderSide(
                         color: elegida
-                            ? AppTheme.buttonPurple
+                            ? AppTheme.primary
                             : AppTheme.textHint,
                       ),
                     );
@@ -234,7 +234,7 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -331,12 +331,12 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
         content: Text(
           'Se eliminará "${ejercicio.nombre}".\n\n'
           'Su historial se conserva.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -382,11 +382,7 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                     itemCount: ejercicios.length,
                     itemBuilder: (context, i) => _tarjeta(ejercicios[i], i),
-                    onReorder: (desde, hasta) async {
-                      // Al mover hacia abajo, quitar el ejercicio primero
-                      // recorre las posiciones siguientes
-                      if (hasta > desde) hasta--;
-
+                    onReorderItem: (desde, hasta) async {
                       final movido = ejercicios.removeAt(desde);
                       ejercicios.insert(hasta, movido);
 
@@ -423,14 +419,14 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.buttonPurple.withValues(alpha: 0.15),
+        color: AppTheme.primary.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.buttonPurple),
+        border: Border.all(color: AppTheme.primary),
       ),
-      child: const Text(
+      child: Text(
         'Este día tiene una sesión en curso. Bajar las series '
         'puede borrar reps ya anotadas.',
-        style: TextStyle(color: AppTheme.buttonPurple, fontSize: 12),
+        style: TextStyle(color: AppTheme.primary, fontSize: 12),
       ),
     );
   }
@@ -462,7 +458,7 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(
-            color: AppTheme.buttonPurple.withValues(alpha: 0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
           ),
         ),
         child: ListTile(
@@ -483,11 +479,11 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
               const SizedBox(width: 6),
               CircleAvatar(
                 radius: 14,
-                backgroundColor: AppTheme.buttonPurple,
+                backgroundColor: AppTheme.primary,
                 child: Text(
                   '${ejercicio.orden}',
-                  style: const TextStyle(
-                    color: Colors.black,
+                  style: TextStyle(
+                    color: AppTheme.onPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
@@ -506,7 +502,7 @@ class _GymExercisesScreenState extends State<GymExercisesScreen> {
           subtitle: Text(
             '${_peso(ejercicio)} · '
             '${ejercicio.series}×${ejercicio.reps}',
-            style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
+            style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,

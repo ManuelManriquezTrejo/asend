@@ -117,11 +117,11 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
             child: ElevatedButton(
               onPressed: _guardar,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.buttonPurple,
+                backgroundColor: AppTheme.primary,
               ),
               child: Text(
                 'Guardar',
-                style: TextStyle(color: AppTheme.textWhite, fontSize: e.t(4.2)),
+                style: TextStyle(color: AppTheme.onPrimary, fontSize: e.t(4.2)),
               ),
             ),
           ),
@@ -165,9 +165,9 @@ class SelectorTipo extends StatelessWidget {
             ),
             style: OutlinedButton.styleFrom(
               backgroundColor: activo
-                  ? AppTheme.buttonPurple
+                  ? AppTheme.primary
                   : AppTheme.bgDarkGrey,
-              side: BorderSide(color: AppTheme.buttonPurple),
+              side: BorderSide(color: AppTheme.primary),
             ),
           ),
         ),

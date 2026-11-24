@@ -271,7 +271,7 @@ class _NewDebtScreenState extends State<NewDebtScreen> {
         ),
         content: Text(
           _confirmacion(tipo, nombre, montoFinal, meses, fechaPago),
-          style: const TextStyle(color: AppTheme.textGrey, height: 1.4),
+          style: TextStyle(color: AppTheme.textGrey, height: 1.4),
         ),
         actions: [
           ElevatedButton(
@@ -341,12 +341,12 @@ class _NewDebtScreenState extends State<NewDebtScreen> {
                     'antes de borrar el recordatorio.\n\n' : ''}'
           'Se eliminarán los pagos pendientes sin pagarse. '
           'Lo que ya pagaste se queda en el historial.',
-          style: const TextStyle(color: AppTheme.textGrey, height: 1.4),
+          style: TextStyle(color: AppTheme.textGrey, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -530,7 +530,7 @@ class _NewDebtScreenState extends State<NewDebtScreen> {
                             ? null
                             : () => Navigator.pop(context, false),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppTheme.textGrey),
+                          side: BorderSide(color: AppTheme.textGrey),
                         ),
                         child: Text(
                           'Cancelar',

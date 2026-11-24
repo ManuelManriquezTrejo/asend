@@ -80,7 +80,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
                     trailing: Text(
                       '${p.dia.toString().padLeft(2, '0')} '
                       '${_mesesCortos[p.mes]}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.textGrey,
                         fontSize: 13,
                       ),
@@ -94,7 +94,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -131,7 +131,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -142,9 +142,9 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
               if (texto.isEmpty && !permitirVacio) return;
               Navigator.pop(ctx, texto);
             },
-            child: const Text(
+            child: Text(
               'Guardar',
-              style: TextStyle(color: AppTheme.buttonPurple),
+              style: TextStyle(color: AppTheme.primary),
             ),
           ),
         ],
@@ -171,8 +171,8 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
       helpText: 'Elige día y mes',
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: AppTheme.buttonPurple,
+          colorScheme: ColorScheme.dark(
+            primary: AppTheme.primary,
             surface: AppTheme.bgDarkGrey,
             onSurface: AppTheme.textWhite,
           ),
@@ -222,7 +222,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
                           child: Container(
                             height: 40,
                             decoration: BoxDecoration(
-                              color: AppTheme.buttonPurple.withValues(
+                              color: AppTheme.primary.withValues(
                                 alpha: 0.15,
                               ),
                               borderRadius: BorderRadius.circular(6),
@@ -282,16 +282,16 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text(
+                child: Text(
                   'Cancelar',
                   style: TextStyle(color: AppTheme.textGrey),
                 ),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, seleccionado),
-                child: const Text(
+                child: Text(
                   'Guardar',
-                  style: TextStyle(color: AppTheme.buttonPurple),
+                  style: TextStyle(color: AppTheme.primary),
                 ),
               ),
             ],
@@ -355,7 +355,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.person, color: AppTheme.buttonPurple),
+              leading: Icon(Icons.person, color: AppTheme.primary),
               title: const Text(
                 'Nombre',
                 style: TextStyle(color: AppTheme.textWhite),
@@ -363,7 +363,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
               onTap: () => Navigator.pop(ctx, 'nombre'),
             ),
             ListTile(
-              leading: const Icon(Icons.event, color: AppTheme.buttonPurple),
+              leading: Icon(Icons.event, color: AppTheme.primary),
               title: const Text(
                 'Fecha',
                 style: TextStyle(color: AppTheme.textWhite),
@@ -371,7 +371,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
               onTap: () => Navigator.pop(ctx, 'fecha'),
             ),
             ListTile(
-              leading: const Icon(Icons.cake, color: AppTheme.buttonPurple),
+              leading: Icon(Icons.cake, color: AppTheme.primary),
               title: const Text(
                 'Año',
                 style: TextStyle(color: AppTheme.textWhite),
@@ -379,7 +379,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
               onTap: () => Navigator.pop(ctx, 'anio'),
             ),
             ListTile(
-              leading: const Icon(Icons.notes, color: AppTheme.buttonPurple),
+              leading: Icon(Icons.notes, color: AppTheme.primary),
               title: const Text(
                 'Nota',
                 style: TextStyle(color: AppTheme.textWhite),
@@ -391,7 +391,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -465,12 +465,12 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
         ),
         content: Text(
           '¿Eliminar a ${persona.nombre}?',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -577,7 +577,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
                               // El de hoy se resalta
                               color: hoy
                                   ? AppTheme.success
-                                  : AppTheme.buttonPurple.withValues(
+                                  : AppTheme.primary.withValues(
                                       alpha: 0.3,
                                     ),
                               width: hoy ? 1.5 : 1,

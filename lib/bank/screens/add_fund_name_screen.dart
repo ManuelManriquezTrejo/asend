@@ -51,12 +51,12 @@ class _AddFundNameScreenState extends State<AddFundNameScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Título
-            const Text(
+            Text(
               'Nombre del Fondo',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.buttonPurple,
+                color: AppTheme.primary,
               ),
             ),
             const SizedBox(height: 20),
@@ -74,15 +74,15 @@ class _AddFundNameScreenState extends State<AddFundNameScreen> {
             ElevatedButton(
               onPressed: _continueToPlanDistribution,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.buttonPurple,
+                backgroundColor: AppTheme.primary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 50,
                   vertical: 15,
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Continuar',
-                style: TextStyle(fontSize: 16, color: AppTheme.textWhite),
+                style: TextStyle(fontSize: 16, color: AppTheme.onPrimary),
               ),
             ),
           ],

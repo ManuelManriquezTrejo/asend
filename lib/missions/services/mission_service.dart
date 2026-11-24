@@ -74,7 +74,6 @@ class MissionService {
     );
 
     await box.add(mission);
-    print('✅ Misión creada: ${mission.nombre} (id ${mission.id})');
     return mission;
   }
 
@@ -149,8 +148,6 @@ class MissionService {
         await box.put(k, m);
       }
     }
-
-    print('🏁 Misión completada: ${mission.nombre} (paga ${mission.valor})');
   }
 
   /// Eliminar sin completar: soft delete en cascada, sin historial ni pago
@@ -170,7 +167,5 @@ class MissionService {
         await box.put(k, m);
       }
     }
-
-    print('🗑 Misión eliminada: ${mission.nombre}');
   }
 }

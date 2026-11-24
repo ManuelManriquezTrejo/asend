@@ -53,7 +53,7 @@ class _BodyScreenState extends State<BodyScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     'Unidad',
                     style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
                   ),
@@ -68,7 +68,7 @@ class _BodyScreenState extends State<BodyScreen> {
                         selected: elegida,
                         onSelected: (_) => setDialogState(() => unidad = u),
                         backgroundColor: AppTheme.bgDark,
-                        selectedColor: AppTheme.buttonPurple,
+                        selectedColor: AppTheme.primary,
                         labelStyle: TextStyle(
                           color: elegida
                               ? AppTheme.textWhite
@@ -77,7 +77,7 @@ class _BodyScreenState extends State<BodyScreen> {
                         ),
                         side: BorderSide(
                           color: elegida
-                              ? AppTheme.buttonPurple
+                              ? AppTheme.primary
                               : AppTheme.textHint,
                         ),
                       );
@@ -93,16 +93,16 @@ class _BodyScreenState extends State<BodyScreen> {
                           abrirHistorial = true;
                           Navigator.pop(context);
                         },
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.history,
-                          color: AppTheme.buttonPurple,
+                          color: AppTheme.primary,
                         ),
-                        label: const Text(
+                        label: Text(
                           'Medidas',
-                          style: TextStyle(color: AppTheme.buttonPurple),
+                          style: TextStyle(color: AppTheme.primary),
                         ),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppTheme.buttonPurple),
+                          side: BorderSide(color: AppTheme.primary),
                         ),
                       ),
                     ),
@@ -112,7 +112,7 @@ class _BodyScreenState extends State<BodyScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     'Cancelar',
                     style: TextStyle(color: AppTheme.textGrey),
                   ),
@@ -206,7 +206,7 @@ class _BodyScreenState extends State<BodyScreen> {
                     ),
                     subtitle: Text(
                       z.unidad,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.textGrey,
                         fontSize: 12,
                       ),
@@ -220,7 +220,7 @@ class _BodyScreenState extends State<BodyScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -242,12 +242,12 @@ class _BodyScreenState extends State<BodyScreen> {
         content: Text(
           'Se eliminará "${elegida.nombre}".\n\n'
           'Sus mediciones se conservan.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -323,7 +323,7 @@ class _BodyScreenState extends State<BodyScreen> {
         children: [
           const Icon(Icons.straighten, size: 56, color: AppTheme.textHint),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Aún no hay zonas para medir',
             style: TextStyle(color: AppTheme.textGrey, fontSize: 15),
           ),
@@ -347,14 +347,14 @@ class _BodyScreenState extends State<BodyScreen> {
         // Agregar zona va al final de la lista
         OutlinedButton.icon(
           onPressed: () => _dialogoZona(),
-          icon: const Icon(Icons.add, color: AppTheme.buttonPurple),
-          label: const Text(
+          icon: Icon(Icons.add, color: AppTheme.primary),
+          label: Text(
             'Agregar zona',
-            style: TextStyle(color: AppTheme.buttonPurple),
+            style: TextStyle(color: AppTheme.primary),
           ),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
-            side: const BorderSide(color: AppTheme.buttonPurple),
+            side: BorderSide(color: AppTheme.primary),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -378,7 +378,7 @@ class _BodyScreenState extends State<BodyScreen> {
           side: BorderSide(
             color: medidaHoy
                 ? AppTheme.success.withValues(alpha: 0.5)
-                : AppTheme.buttonPurple.withValues(alpha: 0.3),
+                : AppTheme.primary.withValues(alpha: 0.3),
           ),
         ),
         child: ListTile(

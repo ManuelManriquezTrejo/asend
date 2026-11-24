@@ -38,7 +38,7 @@ Future<void> showMissionCompletionDialog(
           const SizedBox(height: 12),
           Text(
             'Se registrará un pago de ${mission.valor}.',
-            style: const TextStyle(color: AppTheme.textGrey),
+            style: TextStyle(color: AppTheme.textGrey),
           ),
           if (pendientes > 0) ...[
             const SizedBox(height: 12),

@@ -99,13 +99,13 @@ class _ChartsMenuScreenState extends State<ChartsMenuScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(
-            color: AppTheme.buttonPurple.withValues(alpha: 0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
           ),
         ),
         child: Column(
           children: [
             ListTile(
-              leading: Icon(fuente.icono, color: AppTheme.buttonPurple),
+              leading: Icon(fuente.icono, color: AppTheme.primary),
               title: Text(
                 fuente.nombre,
                 style: const TextStyle(
@@ -129,7 +129,7 @@ class _ChartsMenuScreenState extends State<ChartsMenuScreen> {
                   contentPadding: const EdgeInsets.only(left: 56, right: 16),
                   title: Text(
                     o.nombre,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.textGrey,
                       fontSize: 14,
                     ),

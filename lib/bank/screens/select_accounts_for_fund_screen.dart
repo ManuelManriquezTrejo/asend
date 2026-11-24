@@ -112,10 +112,10 @@ class _SelectAccountsForFundScreenState
             padding: const EdgeInsets.all(20.0),
             child: Text(
               '¿A qué cuentas se va a agregar "${widget.fundName}"?',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.buttonPurple,
+                color: AppTheme.primary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -183,7 +183,7 @@ class _SelectAccountsForFundScreenState
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.buttonPurple,
+                    backgroundColor: AppTheme.primary,
                   ),
                   child: const Text('Agregar Cuenta'),
                 ),
@@ -191,7 +191,7 @@ class _SelectAccountsForFundScreenState
                 ElevatedButton(
                   onPressed: _goToDistributionScreen,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.buttonPurple,
+                    backgroundColor: AppTheme.primary,
                   ),
                   child: const Text('Continuar'),
                 ),

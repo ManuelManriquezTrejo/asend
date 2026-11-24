@@ -121,9 +121,9 @@ class _MovementHistoryScreenState extends State<MovementHistoryScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
+              child: Text(
                 'Listo',
-                style: TextStyle(color: AppTheme.buttonPurple),
+                style: TextStyle(color: AppTheme.primary),
               ),
             ),
           ],
@@ -263,9 +263,9 @@ class _MovementHistoryScreenState extends State<MovementHistoryScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
+              child: Text(
                 'Listo',
-                style: TextStyle(color: AppTheme.buttonPurple),
+                style: TextStyle(color: AppTheme.primary),
               ),
             ),
           ],
@@ -380,7 +380,7 @@ class _MovementHistoryScreenState extends State<MovementHistoryScreen> {
                         minimumSize: const Size(38, 34),
                         padding: EdgeInsets.zero,
                         backgroundColor: activo
-                            ? AppTheme.buttonPurple
+                            ? AppTheme.primary
                             : AppTheme.bgDarkGrey,
                       ),
                       child: Text(
@@ -404,7 +404,7 @@ class _MovementHistoryScreenState extends State<MovementHistoryScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const Text(
+                Text(
                   'Total: ',
                   style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
                 ),
@@ -450,7 +450,7 @@ class _MovementHistoryScreenState extends State<MovementHistoryScreen> {
           color: AppTheme.bgDarkGrey,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: AppTheme.buttonPurple.withValues(alpha: 0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
           ),
         ),
         child: Column(
@@ -499,7 +499,7 @@ class _MovementHistoryScreenState extends State<MovementHistoryScreen> {
               children: [
                 Text(
                   fecha,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.textGrey,
                     fontSize: 11,
                   ),

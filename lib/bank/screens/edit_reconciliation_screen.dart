@@ -92,12 +92,12 @@ class _EditReconciliationScreenState extends State<EditReconciliationScreen> {
         content: Text(
           'Se eliminará "${_nombreCtrl.text.trim()}".\n\n'
           'Tus cuentas y tu dinero no cambian.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -226,12 +226,12 @@ class _EditReconciliationScreenState extends State<EditReconciliationScreen> {
                 child: ElevatedButton(
                   onPressed: _guardar,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.buttonPurple,
+                    backgroundColor: AppTheme.primary,
                   ),
                   child: Text(
                     'Guardar',
                     style: TextStyle(
-                      color: AppTheme.textWhite,
+                      color: AppTheme.onPrimary,
                       fontSize: e.t(4.2),
                     ),
                   ),
@@ -251,7 +251,7 @@ class _EditReconciliationScreenState extends State<EditReconciliationScreen> {
       child: Text(
         '$texto ($marcados)',
         style: TextStyle(
-          color: AppTheme.buttonPurple,
+          color: AppTheme.primary,
           fontSize: e.t(4.6),
           fontWeight: FontWeight.bold,
         ),
@@ -280,7 +280,7 @@ class _EditReconciliationScreenState extends State<EditReconciliationScreen> {
     return CheckboxListTile(
       value: marcada,
       onChanged: (v) => onChanged(v ?? false),
-      activeColor: AppTheme.buttonPurple,
+      activeColor: AppTheme.primary,
       controlAffinity: ListTileControlAffinity.leading,
       contentPadding: EdgeInsets.zero,
       dense: true,

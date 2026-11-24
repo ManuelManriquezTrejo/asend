@@ -99,7 +99,7 @@ class _AddMissionScreenState extends State<AddMissionScreen> {
       decoration: BoxDecoration(
         color: AppTheme.bgDarkGrey,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.buttonPurple),
+        border: Border.all(color: AppTheme.primary),
       ),
       child: ListTile(
         title: Text(
@@ -108,12 +108,12 @@ class _AddMissionScreenState extends State<AddMissionScreen> {
         ),
         subtitle: Text(
           _fechaTexto(valor),
-          style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
+          style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
         ),
         trailing: valor == null
-            ? const Icon(
+            ? Icon(
                 Icons.calendar_today,
-                color: AppTheme.buttonPurple,
+                color: AppTheme.primary,
                 size: 20,
               )
             : IconButton(
@@ -173,8 +173,9 @@ class _AddMissionScreenState extends State<AddMissionScreen> {
                   style: const TextStyle(color: AppTheme.textWhite),
                   decoration: const InputDecoration(hintText: 'Ej: 50'),
                   validator: (v) {
-                    if (v == null || v.isEmpty)
+                    if (v == null || v.isEmpty) {
                       return 'El valor es obligatorio';
+                    }
                     final d = double.tryParse(v);
                     if (d == null) return 'Ingresa un número válido';
                     if (d < 0) return 'No puede ser negativo';
@@ -198,11 +199,11 @@ class _AddMissionScreenState extends State<AddMissionScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
+                      ? SizedBox(
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
-                            color: AppTheme.textWhite,
+                            color: AppTheme.onPrimary,
                             strokeWidth: 2,
                           ),
                         )

@@ -49,7 +49,7 @@ class _EditRoutineHabitScreenState extends State<EditRoutineHabitScreen> {
                   fillColor: AppTheme.bgDark,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppTheme.buttonPurple),
+                    borderSide: BorderSide(color: AppTheme.primary),
                   ),
                 ),
               ),
@@ -205,7 +205,7 @@ class _EditRoutineHabitScreenState extends State<EditRoutineHabitScreen> {
           'Tu historial se archiva y la racha vuelve a cero, porque los '
           'valores viejos no son comparables con los nuevos.\n\n'
           'Después tendrás que indicar el nuevo pago.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
@@ -262,7 +262,7 @@ class _EditRoutineHabitScreenState extends State<EditRoutineHabitScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: AppTheme.buttonPurple.withValues(alpha: 0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
           ),
         ),
         // El color va aquí y no en el Container: ListTile pinta su fondo
@@ -272,14 +272,14 @@ class _EditRoutineHabitScreenState extends State<EditRoutineHabitScreen> {
           color: AppTheme.bgDarkGrey,
           borderRadius: BorderRadius.circular(8),
           child: ListTile(
-            leading: Icon(icono, color: AppTheme.buttonPurple),
+            leading: Icon(icono, color: AppTheme.primary),
             title: Text(
               titulo,
               style: const TextStyle(color: AppTheme.textWhite, fontSize: 14),
             ),
             subtitle: Text(
               actual,
-              style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
+              style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
             ),
             trailing: const Icon(Icons.chevron_right, color: AppTheme.textHint),
             onTap: onTap,
@@ -309,7 +309,7 @@ class _EditRoutineHabitScreenState extends State<EditRoutineHabitScreen> {
           ),
           Text(
             'Racha actual: ${h.currentStreak} días',
-            style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
+            style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
           ),
           const SizedBox(height: 24),
           const Text(

@@ -186,18 +186,18 @@ class _EditMissionScreenState extends State<EditMissionScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(
-            color: AppTheme.buttonPurple.withValues(alpha: 0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
           ),
         ),
         child: ListTile(
-          leading: Icon(icono, color: AppTheme.buttonPurple),
+          leading: Icon(icono, color: AppTheme.primary),
           title: Text(
             titulo,
             style: const TextStyle(color: AppTheme.textWhite, fontSize: 14),
           ),
           subtitle: Text(
             actual,
-            style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
+            style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
           ),
           trailing:
               trailing ??

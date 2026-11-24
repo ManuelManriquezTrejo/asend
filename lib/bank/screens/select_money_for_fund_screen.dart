@@ -135,10 +135,10 @@ class _SelectMoneyForFundScreenState extends State<SelectMoneyForFundScreen> {
             padding: const EdgeInsets.all(20.0),
             child: Text(
               '¿En qué dinero va a quedar "${widget.fundName}"?',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.buttonPurple,
+                color: AppTheme.primary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -146,7 +146,7 @@ class _SelectMoneyForFundScreenState extends State<SelectMoneyForFundScreen> {
 
           Expanded(
             child: dineros.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'Agrega dónde tienes tu dinero',
                       style: TextStyle(color: AppTheme.textGrey),
@@ -174,7 +174,7 @@ class _SelectMoneyForFundScreenState extends State<SelectMoneyForFundScreen> {
                           m.tipo == MoneyService.efectivo
                               ? 'Efectivo'
                               : 'Digital',
-                          style: const TextStyle(color: AppTheme.textGrey),
+                          style: TextStyle(color: AppTheme.textGrey),
                         ),
                         trailing: Container(
                           width: 30,
@@ -209,14 +209,14 @@ class _SelectMoneyForFundScreenState extends State<SelectMoneyForFundScreen> {
                     });
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.buttonPurple,
+                    backgroundColor: AppTheme.primary,
                   ),
                   child: const Text('Agregar Dinero'),
                 ),
                 ElevatedButton(
                   onPressed: _continuar,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.buttonPurple,
+                    backgroundColor: AppTheme.primary,
                   ),
                   child: const Text('Continuar'),
                 ),

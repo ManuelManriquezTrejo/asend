@@ -146,12 +146,12 @@ class _AddRoutineHabitScreenState extends State<AddRoutineHabitScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _selectedTipo == 'nota'
-                            ? AppTheme.buttonPurple
+                            ? AppTheme.primary
                             : AppTheme.bgDarkGrey,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(
                           color: _selectedTipo == 'nota'
-                              ? AppTheme.buttonPurple
+                              ? AppTheme.primary
                               : AppTheme.textHint,
                         ),
                       ),
@@ -171,12 +171,12 @@ class _AddRoutineHabitScreenState extends State<AddRoutineHabitScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _selectedTipo == 'hora'
-                            ? AppTheme.buttonPurple
+                            ? AppTheme.primary
                             : AppTheme.bgDarkGrey,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(
                           color: _selectedTipo == 'hora'
-                              ? AppTheme.buttonPurple
+                              ? AppTheme.primary
                               : AppTheme.textHint,
                         ),
                       ),
@@ -260,25 +260,25 @@ class _AddRoutineHabitScreenState extends State<AddRoutineHabitScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleCreate,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.buttonPurple,
+                    backgroundColor: AppTheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
+                      ? SizedBox(
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
-                            color: AppTheme.textWhite,
+                            color: AppTheme.onPrimary,
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
+                      : Text(
                           'Crear Hábito',
                           style: TextStyle(
-                            color: AppTheme.textWhite,
+                            color: AppTheme.onPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),

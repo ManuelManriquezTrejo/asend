@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:asend/models/habit_history.dart';
 import 'package:asend/models/daily_routine_habit.dart';
 import 'package:asend/database/routine_hive_service.dart';
@@ -44,7 +45,6 @@ class HabitHistoryService {
         await box.put(k, r);
       }
     }
-    print('🗑 Historial de hábito $habitId archivado por cambio de tipo');
   }
 
   /// Crear nuevo registro en HabitHistory
@@ -66,7 +66,7 @@ class HabitHistoryService {
         }
       }
       if (habit == null) {
-        print('❌ No se encontró el hábito $habitId');
+        debugPrint('❌ No se encontró el hábito $habitId');
         return;
       }
 
@@ -86,12 +86,8 @@ class HabitHistoryService {
       );
 
       await box.add(newRecord);
-      print(
-        '✅ Registro guardado: Hábito $habitId = $value '
-        '(${habit.tipo}, paga ${habit.valor})',
-      );
     } catch (e) {
-      print('❌ Error al crear registro: $e');
+      debugPrint('❌ Error al crear registro: $e');
     }
   }
 
@@ -108,7 +104,7 @@ class HabitHistoryService {
             h.deletedAt == null,
       );
     } catch (e) {
-      print('❌ Error al verificar registro: $e');
+      debugPrint('❌ Error al verificar registro: $e');
       return false;
     }
   }
@@ -121,7 +117,7 @@ class HabitHistoryService {
           .where((r) => r.habitId == habitId && r.deletedAt == null)
           .toList();
     } catch (e) {
-      print('❌ Error al obtener registros: $e');
+      debugPrint('❌ Error al obtener registros: $e');
       return [];
     }
   }
@@ -147,7 +143,7 @@ class HabitHistoryService {
         DateTime current = getLogicalDay(h.createdAt);
 
         while (current.isBefore(today)) {
-      final exists = historyBox.values.any(
+          final exists = historyBox.values.any(
             (r) => r.habitId == h.id && r.recordDate.isAtSameMomentAs(current),
           );
 
@@ -163,10 +159,6 @@ class HabitHistoryService {
                 tipoSnapshot: h.tipo,
                 valorSnapshot: h.valor,
               ),
-            );
-            print(
-              '📅 Auto-relleno: Hábito ${h.id} en '
-              '${current.toIso8601String().split('T')[0]} = 0',
             );
           }
 
@@ -197,10 +189,8 @@ class HabitHistoryService {
           dia = dia.add(const Duration(days: 1));
         }
       }
-
-      print('✅ Auto-relleno, rachas y pagos actualizados');
     } catch (e) {
-      print('❌ Error en auto-relleno: $e');
+      debugPrint('❌ Error en auto-relleno: $e');
     }
   }
 
@@ -237,10 +227,8 @@ class HabitHistoryService {
       if (streak > habit.maxStreak) {
         habit.maxStreak = streak;
       }
-
-      print('🔄 Racha recalculada para ${habit.nombre}: $streak días');
     } catch (e) {
-      print('❌ Error al recalcular racha: $e');
+      debugPrint('❌ Error al recalcular racha: $e');
     }
   }
 }

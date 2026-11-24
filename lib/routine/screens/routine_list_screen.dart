@@ -27,7 +27,7 @@ class _RoutineListScreenState extends State<RoutineListScreen> {
         content: Text(
           '"${habit.nombre}" dejará de aparecer en tus pantallas.\n\n'
           'Su historial se conserva para estadísticas futuras.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
@@ -76,7 +76,7 @@ class _RoutineListScreenState extends State<RoutineListScreen> {
         children: [
           Expanded(
             child: habits.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'No hay hábitos creados aún',
                       style: TextStyle(fontSize: 16, color: AppTheme.textGrey),
@@ -95,7 +95,7 @@ class _RoutineListScreenState extends State<RoutineListScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                             side: BorderSide(
-                              color: AppTheme.buttonPurple.withValues(
+                              color: AppTheme.primary.withValues(
                                 alpha: 0.3,
                               ),
                             ),
@@ -111,7 +111,7 @@ class _RoutineListScreenState extends State<RoutineListScreen> {
                             ),
                             subtitle: Text(
                               '${habit.tipo} · Racha: ${habit.currentStreak} · Récord: ${habit.maxStreak}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppTheme.textGrey,
                                 fontSize: 12,
                               ),
@@ -121,7 +121,7 @@ class _RoutineListScreenState extends State<RoutineListScreen> {
                               children: [
                                 IconButton(
                                   icon: const Icon(Icons.edit, size: 20),
-                                  color: AppTheme.buttonPurple,
+                                  color: AppTheme.primary,
                                   tooltip: 'Modificar',
                                   onPressed: () {
                                     Navigator.push(
@@ -164,7 +164,7 @@ class _RoutineListScreenState extends State<RoutineListScreen> {
                   ).then((_) => setState(() {}));
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.buttonPurple,
+                  backgroundColor: AppTheme.primary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

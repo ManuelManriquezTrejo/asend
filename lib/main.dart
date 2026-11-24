@@ -27,6 +27,7 @@ import 'package:asend/routine/services/day_change_service.dart';
 import 'package:asend/routine/services/habit_history_service.dart';
 import 'package:asend/routine/widgets/habit_completion_dialogs.dart';
 import 'package:asend/settings/screens/settings_screen.dart';
+import 'package:asend/settings/services/app_settings_service.dart';
 import 'package:asend/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -70,24 +71,12 @@ void main() async {
   // Inicializar Hive de Dinero
   await MoneyHiveService.initializeMoneyHive();
 
+  // Inicializar ajustes generales (color del tema y Stats)
+  await AppSettingsService.initializeAppSettings();
+
   // Crear la cuenta Metas si todavía no existe (necesita Banco, Pagos,
   // Metas y Dinero ya abiertos)
   await GoalService.asegurarCuentaMetas();
-
-  // Ver datos en consola
-  HiveService.printFondos();
-  HiveService.printAllData();
-  //RoutineHiveService.printAllData();
-  //MissionHiveService.printAllData();
-  CashOutHiveService.printAllData();
-  GoalHiveService.printAllData();
-  StoreHiveService.printAllData();
-  //BirthdayHiveService.printAllData();
-  BodyHiveService.printAllData();
-  GymHiveService.printAllData();
-  ChartHiveService.printAllData();
-  DebtHiveService.printAllData();
-  MoneyHiveService.printAllData();
 
   // Asend es de uso vertical: bloquear la rotación evita
   // los overflow de las pantallas al acostar el teléfono
@@ -100,8 +89,37 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    AppTheme.cambios.addListener(_alCambiarTema);
+  }
+
+  @override
+  void dispose() {
+    AppTheme.cambios.removeListener(_alCambiarTema);
+    super.dispose();
+  }
+
+  /// Al cambiar el color del tema se redibuja toda la app, incluidos
+  /// los widgets const que de otro modo se quedarían con el color viejo.
+  void _alCambiarTema() {
+    setState(() {});
+    void redibujar(Element elemento) {
+      elemento.markNeedsBuild();
+      elemento.visitChildren(redibujar);
+    }
+
+    (context as Element).visitChildren(redibujar);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -240,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {});
         return Future.delayed(const Duration(milliseconds: 500));
       },
-      color: AppTheme.buttonPurple,
+      color: AppTheme.primary,
       backgroundColor: AppTheme.bgDarkGrey,
       child: Scaffold(
         body: Column(
@@ -267,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: IconButton(
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
-                        icon: const Icon(Icons.menu, color: AppTheme.textGrey),
+                        icon: Icon(Icons.menu, color: AppTheme.textGrey),
                         tooltip: 'Configuración',
                         onPressed: () {
                           Navigator.push(
@@ -283,13 +301,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Bienvenido a Asend',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.buttonPurple,
+                      color: AppTheme.primary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -311,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       allCompleted
                           ? '¡Felicidades! Tuviste un día muy productivo 🎉'
                           : 'Actividades pendientes',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         color: AppTheme.textGrey,
                         fontWeight: FontWeight.w500,
@@ -410,8 +428,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: Text(
                 '$titulo ($cantidad)',
-                style: const TextStyle(
-                  color: AppTheme.buttonPurple,
+                style: TextStyle(
+                  color: AppTheme.primary,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
@@ -454,14 +472,14 @@ class _HomeScreenState extends State<HomeScreen> {
           side: BorderSide(
             color: esHoy
                 ? AppTheme.success
-                : AppTheme.buttonPurple.withValues(alpha: 0.3),
+                : AppTheme.primary.withValues(alpha: 0.3),
             width: esHoy ? 2 : 1,
           ),
         ),
         child: ListTile(
           leading: Icon(
             Icons.cake,
-            color: esHoy ? AppTheme.success : AppTheme.buttonPurple,
+            color: esHoy ? AppTheme.success : AppTheme.primary,
           ),
           title: Text(
             b.nombre,
@@ -482,7 +500,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ? null
               : Text(
                   'Cumple $cumple',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.textGrey,
                     fontSize: 12,
                   ),
@@ -561,7 +579,7 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(
-            color: AppTheme.buttonPurple.withValues(alpha: 0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
           ),
         ),
         child: Column(
@@ -581,7 +599,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : 'Misión · Paga ${m.valor} · '
                           '${subs.where((s) => s.completed).length}'
                           '/${subs.length} pasos',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.textGrey,
                   fontSize: 12,
                 ),
@@ -614,7 +632,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         () => setState(() {}),
                       );
                     },
-                    fillColor: WidgetStateProperty.all(AppTheme.buttonPurple),
+                    fillColor: WidgetStateProperty.all(AppTheme.primary),
                   ),
                 ],
               ),
@@ -633,7 +651,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (!mounted) return;
                       setState(() {});
                     },
-                    fillColor: WidgetStateProperty.all(AppTheme.buttonPurple),
+                    fillColor: WidgetStateProperty.all(AppTheme.primary),
                   ),
                   title: Text(
                     s.nombre,
@@ -666,7 +684,7 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(
-            color: AppTheme.buttonPurple.withValues(alpha: 0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
           ),
         ),
         child: ListTile(
@@ -680,14 +698,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           subtitle: Text(
             'Racha: ${habit.currentStreak} días',
-            style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
+            style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
           ),
           trailing: Checkbox(
             value: false,
             onChanged: (_) {
               showHabitCompletionDialog(context, habit, () => setState(() {}));
             },
-            fillColor: WidgetStateProperty.all(AppTheme.buttonPurple),
+            fillColor: WidgetStateProperty.all(AppTheme.primary),
           ),
         ),
       ),

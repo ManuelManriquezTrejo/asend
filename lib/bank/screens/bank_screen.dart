@@ -112,7 +112,7 @@ class _BankScreenState extends State<BankScreen> {
       decoration: BoxDecoration(
         color: AppTheme.bgDarkGrey,
         borderRadius: BorderRadius.circular(e.t(3)),
-        border: Border.all(color: AppTheme.buttonPurple, width: 2),
+        border: Border.all(color: AppTheme.primary, width: 2),
       ),
       child: Column(
         children: [
@@ -128,16 +128,16 @@ class _BankScreenState extends State<BankScreen> {
                     child: Text(
                       titulo,
                       style: TextStyle(
-                        color: AppTheme.buttonPurple,
+                        color: AppTheme.primary,
                         fontSize: e.t(5),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  if (accion != null) accion,
+                  ?accion,
                   Icon(
                     abierta ? Icons.expand_less : Icons.expand_more,
-                    color: AppTheme.buttonPurple,
+                    color: AppTheme.primary,
                     size: e.t(7),
                   ),
                 ],
@@ -212,7 +212,7 @@ class _BankScreenState extends State<BankScreen> {
           dense: true,
           // La cuenta Metas lleva icono de bandera para distinguirla
           leading: esMetas
-              ? Icon(Icons.flag, color: AppTheme.buttonPurple, size: e.t(6))
+              ? Icon(Icons.flag, color: AppTheme.primary, size: e.t(6))
               : null,
           title: Text(
             account.name,
@@ -235,9 +235,9 @@ class _BankScreenState extends State<BankScreen> {
         return Container(
           margin: EdgeInsets.symmetric(horizontal: e.w(2), vertical: e.h(0.5)),
           decoration: BoxDecoration(
-            color: AppTheme.buttonPurple.withValues(alpha: 0.15),
+            color: AppTheme.primary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(e.t(2.5)),
-            border: Border.all(color: AppTheme.buttonPurple, width: 1.5),
+            border: Border.all(color: AppTheme.primary, width: 1.5),
           ),
           child: renglon,
         );
@@ -323,7 +323,7 @@ class _BankScreenState extends State<BankScreen> {
                 // La casilla decide si entra en el total de arriba
                 leading: Checkbox(
                   value: m.seleccionada,
-                  activeColor: AppTheme.buttonPurple,
+                  activeColor: AppTheme.primary,
                   onChanged: (_) async {
                     await MoneyService.alternarSeleccion(m.id);
                     if (mounted) setState(() {});
@@ -503,7 +503,7 @@ class _BankScreenState extends State<BankScreen> {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          foregroundColor: Colors.black,
+          foregroundColor: AppTheme.textBlack,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(e.t(2.5)),
           ),
@@ -535,11 +535,11 @@ class _BankScreenState extends State<BankScreen> {
         child: ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.buttonPurple,
+            backgroundColor: AppTheme.primary,
             shape: const CircleBorder(),
             padding: EdgeInsets.zero,
           ),
-          child: Icon(icono, color: AppTheme.textWhite, size: tamano * 0.45),
+          child: Icon(icono, color: AppTheme.onPrimary, size: tamano * 0.45),
         ),
       ),
     );
@@ -565,7 +565,7 @@ class _BankScreenState extends State<BankScreen> {
                 'Bienvenido a tu banco',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppTheme.buttonPurple,
+                  color: AppTheme.primary,
                   fontSize: e.t(6.5),
                   fontWeight: FontWeight.bold,
                 ),

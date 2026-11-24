@@ -294,7 +294,7 @@ class _Circulo extends StatelessWidget {
             child: Material(
               color: enMantenimiento
                   ? AppTheme.disabled
-                  : AppTheme.buttonPurple,
+                  : AppTheme.primary,
               shape: CircleBorder(
                 side: activo
                     ? const BorderSide(color: AppTheme.textWhite, width: 2)
@@ -306,7 +306,7 @@ class _Circulo extends StatelessWidget {
                 child: SizedBox(
                   width: tamano,
                   height: tamano,
-                  child: Icon(icono, color: Colors.black, size: tamano * 0.46),
+                  child: Icon(icono, color: AppTheme.onPrimary, size: tamano * 0.46),
                 ),
               ),
             ),

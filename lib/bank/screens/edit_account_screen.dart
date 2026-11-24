@@ -51,7 +51,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -137,7 +137,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -222,12 +222,12 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
         content: Text(
           'Se eliminará "${cuenta.name}".\n\n'
           'Su historial de movimientos se conserva.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -270,7 +270,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
     if (cuenta == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Cuenta')),
-        body: const Center(
+        body: Center(
           child: Text(
             'Esta cuenta ya no existe',
             style: TextStyle(color: AppTheme.textGrey),
@@ -285,7 +285,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           // Saldo actual
-          const Text(
+          Text(
             'Saldo',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
@@ -309,7 +309,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
           ),
           // La cuenta Metas solo se renombra: su saldo lo mueve Metas
           if (AccountService.esCuentaMetas(cuenta.id))
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 8),
               child: Text(
                 'Esta cuenta se mueve sola al abonar o retirar en Metas',
@@ -345,8 +345,10 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
     required IconData icono,
     required String texto,
     required VoidCallback onTap,
-    Color color = AppTheme.buttonPurple,
+    Color? color,
   }) {
+    // Sin color indicado se usa el principal del tema
+    color ??= AppTheme.primary;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Material(

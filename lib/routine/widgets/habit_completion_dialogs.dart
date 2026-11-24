@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:asend/models/daily_routine_habit.dart';
 import 'package:asend/routine/services/habit_history_service.dart';
+import 'package:asend/theme/app_theme.dart';
 
 // Dialog 1: Confirmación inicial
 Future<void> showHabitCompletionDialog(
@@ -146,6 +147,7 @@ class HabitConfirmationDialog extends StatelessWidget {
   final VoidCallback onCancel;
 
   const HabitConfirmationDialog({
+    super.key,
     required this.habit,
     required this.onConfirm,
     required this.onCancel,
@@ -154,11 +156,11 @@ class HabitConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: const Color(0xFF2A2A2A),
-      title: Text('¿Se ha completado?', style: TextStyle(color: Colors.white)),
+      backgroundColor: AppTheme.bgDarkGrey,
+      title: Text('¿Se ha completado?', style: TextStyle(color: AppTheme.textWhite)),
       content: Text(
         'Marcaste "${habit.nombre}" como completado',
-        style: TextStyle(color: Colors.white70),
+        style: TextStyle(color: AppTheme.textGrey),
       ),
       actions: [
         TextButton(onPressed: onCancel, child: const Text('No')),
@@ -177,6 +179,7 @@ class ValueInputDialog extends StatefulWidget {
   final VoidCallback onCancel;
 
   const ValueInputDialog({
+    super.key,
     required this.habit,
     required this.onValueSubmitted,
     required this.onCancel,
@@ -259,13 +262,11 @@ class _ValueInputDialogState extends State<ValueInputDialog> {
 
   @override
   Widget build(BuildContext context) {
-    const Color purpleUva = Color(0xFF7C3AED);
-
     return AlertDialog(
-      backgroundColor: const Color(0xFF2A2A2A),
+      backgroundColor: AppTheme.bgDarkGrey,
       title: Text(
         widget.habit.tipo == 'nota' ? 'Calificación (0-11)' : 'Tiempo dedicado',
-        style: TextStyle(color: Colors.white),
+        style: TextStyle(color: AppTheme.textWhite),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -274,15 +275,15 @@ class _ValueInputDialogState extends State<ValueInputDialog> {
             TextFormField(
               controller: _noteController,
               keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppTheme.textWhite),
               decoration: InputDecoration(
                 hintText: 'Ingresa nota (0-11)',
-                hintStyle: const TextStyle(color: Colors.white38),
+                hintStyle: const TextStyle(color: AppTheme.textHint),
                 filled: true,
-                fillColor: const Color(0xFF1A1A1A),
+                fillColor: AppTheme.bgDark,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: purpleUva),
+                  borderSide: BorderSide(color: AppTheme.primary),
                 ),
               ),
             )
@@ -293,15 +294,15 @@ class _ValueInputDialogState extends State<ValueInputDialog> {
                   child: TextFormField(
                     controller: _hoursController,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: AppTheme.textWhite),
                     decoration: InputDecoration(
                       hintText: 'Horas',
-                      hintStyle: const TextStyle(color: Colors.white38),
+                      hintStyle: const TextStyle(color: AppTheme.textHint),
                       filled: true,
-                      fillColor: const Color(0xFF1A1A1A),
+                      fillColor: AppTheme.bgDark,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: purpleUva),
+                        borderSide: BorderSide(color: AppTheme.primary),
                       ),
                     ),
                   ),
@@ -311,15 +312,15 @@ class _ValueInputDialogState extends State<ValueInputDialog> {
                   child: TextFormField(
                     controller: _minutesController,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: AppTheme.textWhite),
                     decoration: InputDecoration(
                       hintText: 'Minutos',
-                      hintStyle: const TextStyle(color: Colors.white38),
+                      hintStyle: const TextStyle(color: AppTheme.textHint),
                       filled: true,
-                      fillColor: const Color(0xFF1A1A1A),
+                      fillColor: AppTheme.bgDark,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: purpleUva),
+                        borderSide: BorderSide(color: AppTheme.primary),
                       ),
                     ),
                   ),
@@ -331,7 +332,7 @@ class _ValueInputDialogState extends State<ValueInputDialog> {
               padding: const EdgeInsets.only(top: 12),
               child: Text(
                 _errorMessage,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
+                style: const TextStyle(color: AppTheme.danger, fontSize: 12),
               ),
             ),
         ],
@@ -354,6 +355,7 @@ class ConfirmationDialog extends StatelessWidget {
   final VoidCallback onCorrect;
 
   const ConfirmationDialog({
+    super.key,
     required this.habit,
     required this.value,
     required this.onConfirm,
@@ -372,11 +374,11 @@ class ConfirmationDialog extends StatelessWidget {
     }
 
     return AlertDialog(
-      backgroundColor: const Color(0xFF2A2A2A),
-      title: Text('¿Confirmas?', style: TextStyle(color: Colors.white)),
+      backgroundColor: AppTheme.bgDarkGrey,
+      title: Text('¿Confirmas?', style: TextStyle(color: AppTheme.textWhite)),
       content: Text(
         'Registraste: $displayValue de "${habit.nombre}"',
-        style: TextStyle(color: Colors.white70),
+        style: TextStyle(color: AppTheme.textGrey),
       ),
       actions: [
         TextButton(onPressed: onCorrect, child: const Text('Corregir')),
@@ -397,6 +399,7 @@ class Over24hDialog extends StatefulWidget {
   final Function onRefresh;
 
   const Over24hDialog({
+    super.key,
     required this.habit,
     required this.totalHours,
     required this.onConfirm,
@@ -415,11 +418,11 @@ class _Over24hDialogState extends State<Over24hDialog> {
   Widget build(BuildContext context) {
     if (_stage == 1) {
       return AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
-        title: Text('¡Wow!', style: TextStyle(color: Colors.white)),
+        backgroundColor: AppTheme.bgDarkGrey,
+        title: Text('¡Wow!', style: TextStyle(color: AppTheme.textWhite)),
         content: Text(
           'Hiciste ${widget.totalHours.toStringAsFixed(1)} horas en un día de 24...\n\n¿Estás seguro?',
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
@@ -440,11 +443,11 @@ class _Over24hDialogState extends State<Over24hDialog> {
       );
     } else if (_stage == 2) {
       return AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
-        title: Text('¿Estás seguro?', style: TextStyle(color: Colors.white)),
+        backgroundColor: AppTheme.bgDarkGrey,
+        title: Text('¿Estás seguro?', style: TextStyle(color: AppTheme.textWhite)),
         content: Text(
           'Esto es bastante inusual...',
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
@@ -472,7 +475,7 @@ class _Over24hDialogState extends State<Over24hDialog> {
 class Over24hFinalDialog extends StatefulWidget {
   final Function onRefresh;
 
-  const Over24hFinalDialog({required this.onRefresh});
+  const Over24hFinalDialog({super.key, required this.onRefresh});
 
   @override
   State<Over24hFinalDialog> createState() => _Over24hFinalDialogState();
@@ -517,7 +520,7 @@ class _Over24hFinalDialogState extends State<Over24hFinalDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: const Color(0xFF2A2A2A),
+      backgroundColor: AppTheme.bgDarkGrey,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -528,7 +531,7 @@ class _Over24hFinalDialogState extends State<Over24hFinalDialog> {
               _showSecondPhrase ? 'No te creo' : _randomPhrase,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppTheme.textWhite,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -549,6 +552,7 @@ class FinalMessageDialog extends StatelessWidget {
   final VoidCallback onConfirm;
 
   const FinalMessageDialog({
+    super.key,
     required this.habit,
     required this.value,
     required this.onConfirm,
@@ -566,7 +570,7 @@ class FinalMessageDialog extends StatelessWidget {
     }
 
     return Dialog(
-      backgroundColor: const Color(0xFF2A2A2A),
+      backgroundColor: AppTheme.bgDarkGrey,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -577,7 +581,7 @@ class FinalMessageDialog extends StatelessWidget {
               '✅ Completado',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white,
+                color: AppTheme.textWhite,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -586,7 +590,7 @@ class FinalMessageDialog extends StatelessWidget {
             Text(
               'Hiciste $displayValue de "${habit.nombre}"',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

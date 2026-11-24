@@ -288,10 +288,10 @@ class _DistributeFundPercentageScreenState
             padding: const EdgeInsets.all(20.0),
             child: Text(
               widget.titulo,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.buttonPurple,
+                color: AppTheme.primary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -389,7 +389,7 @@ class _DistributeFundPercentageScreenState
               onPressed: canContinue ? _listo : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: canContinue
-                    ? AppTheme.buttonPurple
+                    ? AppTheme.primary
                     : AppTheme.disabled,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 50,

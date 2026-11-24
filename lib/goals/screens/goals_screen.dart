@@ -49,7 +49,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -60,9 +60,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
               if (texto.isEmpty) return;
               Navigator.pop(ctx, texto);
             },
-            child: const Text(
+            child: Text(
               'Aceptar',
-              style: TextStyle(color: AppTheme.buttonPurple),
+              style: TextStyle(color: AppTheme.primary),
             ),
           ),
         ],
@@ -77,7 +77,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
     return resultado;
   }
 
-  /// Diálogo de monto entero. Devuelve el número o null si cancela.  Future<int?> _pedirMonto({required String titulo, String? ayuda}) {
+  /// Diálogo de monto entero. Devuelve el número o null si cancela.
   Future<int?> _pedirMonto({required String titulo, String? ayuda}) async {
     final controller = TextEditingController();
 
@@ -92,7 +92,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
             if (ayuda != null) ...[
               Text(
                 ayuda,
-                style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
+                style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
               ),
               const SizedBox(height: 12),
             ],
@@ -112,7 +112,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -123,9 +123,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
               if (monto == null || monto <= 0) return;
               Navigator.pop(ctx, monto);
             },
-            child: const Text(
+            child: Text(
               'Aceptar',
-              style: TextStyle(color: AppTheme.buttonPurple),
+              style: TextStyle(color: AppTheme.primary),
             ),
           ),
         ],
@@ -192,12 +192,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
             '$porMeta a cada una de las ${metas.length} metas.\n'
             'Salen $sale de la cuenta.'
             '${sobrante > 0 ? '\nSobrante: $sobrante (se queda en la cuenta)' : ''}',
-            style: const TextStyle(color: AppTheme.textGrey),
+            style: TextStyle(color: AppTheme.textGrey),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -237,12 +237,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
         ),
         content: Text(
           'Acumulado: ${meta.saldo}',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -331,7 +331,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     ),
                     trailing: Text(
                       '${m.saldo}',
-                      style: const TextStyle(color: AppTheme.textGrey),
+                      style: TextStyle(color: AppTheme.textGrey),
                     ),
                     onTap: () => Navigator.pop(ctx, m),
                   ),
@@ -342,7 +342,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -365,12 +365,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
           content: Text(
             'La meta "${elegida.nombre}" tiene ${elegida.saldo}.\n\n'
             'Ese dinero regresará a la cuenta.',
-            style: const TextStyle(color: AppTheme.textGrey),
+            style: TextStyle(color: AppTheme.textGrey),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -431,7 +431,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                             side: BorderSide(
-                              color: AppTheme.buttonPurple.withValues(
+                              color: AppTheme.primary.withValues(
                                 alpha: 0.3,
                               ),
                             ),
@@ -458,9 +458,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 IconButton(
-                                  icon: const Icon(
+                                  icon: Icon(
                                     Icons.edit,
-                                    color: AppTheme.buttonPurple,
+                                    color: AppTheme.primary,
                                     size: 20,
                                   ),
                                   onPressed: () => _moverMeta(m),
@@ -481,7 +481,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Total apartado',
                     style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
                   ),
@@ -515,7 +515,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.success,
                     ),
-                    child: const Icon(Icons.attach_money, color: Colors.black),
+                    child: const Icon(Icons.attach_money, color: AppTheme.textBlack),
                   ),
                 ),
                 const SizedBox(width: 8),

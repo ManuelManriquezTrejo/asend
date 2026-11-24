@@ -108,7 +108,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -116,11 +116,11 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, controller.text),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.buttonPurple,
+              backgroundColor: AppTheme.primary,
             ),
-            child: const Text(
+            child: Text(
               'Crear',
-              style: TextStyle(color: AppTheme.textWhite),
+              style: TextStyle(color: AppTheme.onPrimary),
             ),
           ),
         ],
@@ -168,7 +168,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -176,11 +176,11 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, controller.text),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.buttonPurple,
+              backgroundColor: AppTheme.primary,
             ),
-            child: const Text(
+            child: Text(
               'Guardar',
-              style: TextStyle(color: AppTheme.textWhite),
+              style: TextStyle(color: AppTheme.onPrimary),
             ),
           ),
         ],
@@ -219,12 +219,12 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
         content: Text(
           '¿Eliminar "${c.nombre}"?\n'
           'Los retiros que ya lo usaron no cambian.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -289,7 +289,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                     c.id == _conceptoId
                         ? Icons.radio_button_checked
                         : Icons.radio_button_unchecked,
-                    color: AppTheme.buttonPurple,
+                    color: AppTheme.primary,
                     size: 20,
                   ),
                   // "Retiro" no se edita ni se borra
@@ -299,7 +299,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.edit,
                                 color: AppTheme.textGrey,
                                 size: 18,
@@ -336,9 +336,9 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                 Navigator.pop(ctx);
                 await _crearConcepto();
               },
-              child: const Text(
+              child: Text(
                 'Nuevo concepto',
-                style: TextStyle(color: AppTheme.buttonPurple),
+                style: TextStyle(color: AppTheme.primary),
               ),
             ),
           ],
@@ -422,7 +422,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Cuenta
-            const Text(
+            Text(
               'Cuenta',
               style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
             ),
@@ -448,7 +448,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
             const SizedBox(height: 24),
 
             // Concepto
-            const Text(
+            Text(
               'Concepto',
               style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
             ),
@@ -463,9 +463,9 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                         WithdrawConceptService.nombrePorDefecto,
                     style: const TextStyle(color: AppTheme.textWhite),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.arrow_drop_down,
-                    color: AppTheme.buttonPurple,
+                    color: AppTheme.primary,
                   ),
                 ],
               ),
@@ -473,7 +473,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
             const SizedBox(height: 24),
 
             // Monto
-            const Text(
+            Text(
               'Monto',
               style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
             ),
@@ -492,12 +492,12 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
             ElevatedButton(
               onPressed: _retirar,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.buttonPurple,
+                backgroundColor: AppTheme.primary,
                 padding: const EdgeInsets.symmetric(vertical: 15),
               ),
-              child: const Text(
+              child: Text(
                 'Retirar',
-                style: TextStyle(fontSize: 16, color: AppTheme.textWhite),
+                style: TextStyle(fontSize: 16, color: AppTheme.onPrimary),
               ),
             ),
           ],

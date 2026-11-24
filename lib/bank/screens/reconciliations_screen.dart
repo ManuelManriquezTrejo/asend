@@ -71,17 +71,17 @@ class _ReconciliationsScreenState extends State<ReconciliationsScreen> {
                 child: ElevatedButton.icon(
                   onPressed: () => _abrir(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.buttonPurple,
+                    backgroundColor: AppTheme.primary,
                   ),
                   icon: Icon(
                     Icons.add,
-                    color: AppTheme.textWhite,
+                    color: AppTheme.onPrimary,
                     size: e.t(5.5),
                   ),
                   label: Text(
                     'Nuevo cuadre',
                     style: TextStyle(
-                      color: AppTheme.textWhite,
+                      color: AppTheme.onPrimary,
                       fontSize: e.t(4.2),
                     ),
                   ),
@@ -121,7 +121,7 @@ class _ReconciliationsScreenState extends State<ReconciliationsScreen> {
         color: AppTheme.bgDarkGrey,
         borderRadius: BorderRadius.circular(e.t(3)),
         border: Border.all(
-          color: hayDif ? colorDif : AppTheme.buttonPurple,
+          color: hayDif ? colorDif : AppTheme.primary,
           width: 2,
         ),
       ),

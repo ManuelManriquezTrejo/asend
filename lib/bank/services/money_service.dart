@@ -12,9 +12,6 @@ class MoneyService {
   static const String efectivo = 'efectivo';
   static const String digital = 'digital';
 
-  /// Clave en money_settings del último Dinero usado para pagar.
-  static const String _claveUltimo = 'ultimoMoneyId';
-
   // ── Consultas ──────────────────────────────────────────
 
   /// Quita acentos y pasa a minúsculas para ordenar alfabéticamente.

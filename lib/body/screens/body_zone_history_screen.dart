@@ -58,7 +58,7 @@ class _BodyZoneHistoryScreenState extends State<BodyZoneHistoryScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -109,12 +109,12 @@ class _BodyZoneHistoryScreenState extends State<BodyZoneHistoryScreen> {
         content: Text(
           'Se eliminará ${_numero(medicion.valor)} '
           '${medicion.unidadSnapshot} del ${_fecha(medicion.fecha)}.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -159,7 +159,7 @@ class _BodyZoneHistoryScreenState extends State<BodyZoneHistoryScreen> {
   }
 
   Widget _vacio() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -183,7 +183,7 @@ class _BodyZoneHistoryScreenState extends State<BodyZoneHistoryScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(
-            color: AppTheme.buttonPurple.withValues(alpha: 0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
           ),
         ),
         child: ListTile(
@@ -197,7 +197,7 @@ class _BodyZoneHistoryScreenState extends State<BodyZoneHistoryScreen> {
           ),
           subtitle: Text(
             _fecha(medicion.fecha),
-            style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
+            style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,

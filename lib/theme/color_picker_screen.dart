@@ -183,7 +183,7 @@ class _ColorPickerScreenState extends State<ColorPickerScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               '#',
               style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
             ),
@@ -335,7 +335,7 @@ class _ColorPickerScreenState extends State<ColorPickerScreen> {
         children: [
           Text(
             etiqueta,
-            style: const TextStyle(color: AppTheme.textGrey, fontSize: 11),
+            style: TextStyle(color: AppTheme.textGrey, fontSize: 11),
           ),
           const SizedBox(height: 4),
           LayoutBuilder(
@@ -401,7 +401,7 @@ class _ColorPickerScreenState extends State<ColorPickerScreen> {
       children: [
         Text(
           leyenda,
-          style: const TextStyle(color: AppTheme.textGrey, fontSize: 11),
+          style: TextStyle(color: AppTheme.textGrey, fontSize: 11),
         ),
         const SizedBox(height: 4),
         Container(
@@ -460,21 +460,21 @@ class _ColorPickerScreenState extends State<ColorPickerScreen> {
         ),
         content: Text(
           mensaje,
-          style: const TextStyle(color: AppTheme.textGrey, fontSize: 14),
+          style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
+            child: Text(
               'No',
               style: TextStyle(color: AppTheme.textGrey),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
+            child: Text(
               'Sí',
-              style: TextStyle(color: AppTheme.buttonPurple),
+              style: TextStyle(color: AppTheme.primary),
             ),
           ),
         ],

@@ -55,7 +55,7 @@ class _GymScreenState extends State<GymScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -118,7 +118,7 @@ class _GymScreenState extends State<GymScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -189,7 +189,7 @@ class _GymScreenState extends State<GymScreen> {
                 ),
                 subtitle: Text(
                   '$ejercicios ejercicios',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.textGrey,
                     fontSize: 12,
                   ),
@@ -202,7 +202,7 @@ class _GymScreenState extends State<GymScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -227,12 +227,12 @@ class _GymScreenState extends State<GymScreen> {
           'Se eliminará "${elegido.nombre}" con sus ejercicios.\n\n'
           '${enCurso ? "La sesión en curso se descarta sin guardar.\n\n" : ""}'
           'El historial se conserva.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -302,12 +302,12 @@ class _GymScreenState extends State<GymScreen> {
             '$nombres sigue en curso.\n\n'
             'Puedes empezar ${dia.nombre} de todos modos; '
             'los dos quedan abiertos.',
-            style: const TextStyle(color: AppTheme.textGrey),
+            style: TextStyle(color: AppTheme.textGrey),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -349,21 +349,21 @@ class _GymScreenState extends State<GymScreen> {
                       '${fecha.day}/${fecha.month}/${fecha.year}.\n\n'
                       'Cambia la fecha o borra lo guardado.'
                 : '${fecha.day}/${fecha.month}/${fecha.year}',
-            style: const TextStyle(color: AppTheme.textGrey),
+            style: TextStyle(color: AppTheme.textGrey),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, 'cancelar'),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, 'fecha'),
-              child: const Text(
+              child: Text(
                 'Otra fecha',
-                style: TextStyle(color: AppTheme.buttonPurple),
+                style: TextStyle(color: AppTheme.primary),
               ),
             ),
             if (ocupada)
@@ -424,12 +424,12 @@ class _GymScreenState extends State<GymScreen> {
         content: Text(
           'Se borrará ${dia.nombre} del '
           '${fecha.day}/${fecha.month}/${fecha.year}.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -454,14 +454,14 @@ class _GymScreenState extends State<GymScreen> {
           '¿Estás seguro?',
           style: TextStyle(color: AppTheme.textWhite),
         ),
-        content: const Text(
+        content: Text(
           'Esto no se puede deshacer.',
           style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -498,8 +498,8 @@ class _GymScreenState extends State<GymScreen> {
     if (_cargando) {
       return Scaffold(
         appBar: AppBar(title: const Text('Rutina de gym')),
-        body: const Center(
-          child: CircularProgressIndicator(color: AppTheme.buttonPurple),
+        body: Center(
+          child: CircularProgressIndicator(color: AppTheme.primary),
         ),
       );
     }
@@ -516,7 +516,7 @@ class _GymScreenState extends State<GymScreen> {
               dias.isEmpty
                   ? 'Aún no hay días creados'
                   : 'Bienvenido a tu rutina',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.textGrey,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -531,11 +531,7 @@ class _GymScreenState extends State<GymScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                     itemCount: dias.length,
                     itemBuilder: (context, i) => _tarjetaDia(dias[i], i),
-                    onReorder: (desde, hasta) async {
-                      // Al mover hacia abajo, quitar el día primero
-                      // recorre las posiciones siguientes
-                      if (hasta > desde) hasta--;
-
+                    onReorderItem: (desde, hasta) async {
                       final movido = dias.removeAt(desde);
                       dias.insert(hasta, movido);
 
@@ -582,7 +578,7 @@ class _GymScreenState extends State<GymScreen> {
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(
             color: enCurso
-                ? AppTheme.buttonPurple
+                ? AppTheme.primary
                 : AppTheme.disabled.withValues(alpha: 0.3),
             width: enCurso ? 2 : 1,
           ),
@@ -602,7 +598,7 @@ class _GymScreenState extends State<GymScreen> {
           title: Text(
             dia.nombre,
             style: TextStyle(
-              color: enCurso ? AppTheme.buttonPurple : AppTheme.textWhite,
+              color: enCurso ? AppTheme.primary : AppTheme.textWhite,
               fontSize: 16,
               fontWeight: enCurso ? FontWeight.bold : FontWeight.w500,
             ),
@@ -612,7 +608,7 @@ class _GymScreenState extends State<GymScreen> {
                 ? 'En curso · ${fecha.day}/${fecha.month}'
                 : '$ejercicios ejercicios',
             style: TextStyle(
-              color: enCurso ? AppTheme.buttonPurple : AppTheme.textGrey,
+              color: enCurso ? AppTheme.primary : AppTheme.textGrey,
               fontSize: 12,
             ),
           ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:asend/models/debt.dart';
 import 'package:asend/models/debt_adapter.dart';
@@ -25,10 +26,8 @@ class DebtHiveService {
       await Hive.openBox<Debt>(debtsBox);
       await Hive.openBox<DebtInstallment>(installmentsBox);
       await Hive.openBox(settingsBox);
-
-      print('✅ Debt Hive inicializado');
     } catch (e) {
-      print('❌ Error al inicializar Debt Hive: $e');
+      debugPrint('❌ Error al inicializar Debt Hive: $e');
     }
   }
 
@@ -38,73 +37,4 @@ class DebtHiveService {
       Hive.box<DebtInstallment>(installmentsBox);
 
   static Box getSettingsBox() => Hive.box(settingsBox);
-
-  /// Ver todos los datos de Deuda
-  static void printAllData() {
-    String f(DateTime? d) => d == null
-        ? '—'
-        : d.toIso8601String().split('.')[0].replaceFirst('T', ' ');
-
-    print('\n\n========== 💳 DEUDA - BASE DE DATOS ==========');
-
-    final deudas = getDebtsBox();
-    print('\n📌 TABLA: Debt (${deudas.length} registros)');
-
-    if (deudas.isEmpty) {
-      print('  ❌ Sin deudas');
-    } else {
-      final lista = deudas.values.toList()
-        ..sort((a, b) => a.id.compareTo(b.id));
-
-      for (final d in lista) {
-        print(
-          '  ${d.deletedAt == null ? "💳" : "🗑"} '
-          '─────────────────────────',
-        );
-        print('     id          : ${d.id}');
-        print('     nombre      : ${d.nombre}');
-        print('     tipo        : ${d.tipo}');
-        print('     monto       : ${d.monto}');
-        print('     diaPago     : ${d.diaPago}');
-        print('     diasLimite  : ${d.diasLimite}');
-        print('     fechaInicio : ${f(d.fechaInicio)}');
-        print('     meses       : ${d.meses}');
-        print('     createdAt   : ${f(d.createdAt)}');
-        print('     deletedAt   : ${f(d.deletedAt)}');
-      }
-    }
-
-    final cuotas = getInstallmentsBox();
-    print('\n📌 TABLA: DebtInstallment (${cuotas.length} registros)');
-
-    if (cuotas.isEmpty) {
-      print('  ❌ Sin mensualidades');
-    } else {
-      final lista = cuotas.values.toList()
-        ..sort((a, b) => a.id.compareTo(b.id));
-
-      for (final c in lista) {
-        final icono = c.deletedAt != null
-            ? '🗑'
-            : c.pagadoAt != null
-            ? '✅'
-            : '⏳';
-        print('  $icono ─────────────────────────');
-        print('     id          : ${c.id}');
-        print('     debtId      : ${c.debtId}');
-        print('     numero      : ${c.numero}');
-        print('     monto       : ${c.monto}');
-        print('     fechaPago   : ${f(c.fechaPago)}');
-        print('     fechaLimite : ${f(c.fechaLimite)}');
-        print('     pagadoAt    : ${f(c.pagadoAt)}');
-        print('     accountId   : ${c.accountId ?? "—"}');
-        print('     deletedAt   : ${f(c.deletedAt)}');
-      }
-    }
-
-    print('\n📌 Última cuenta usada: '
-        '${getSettingsBox().get('ultimaCuentaId') ?? "—"}');
-
-    print('\n==========================================\n');
-  }
 }

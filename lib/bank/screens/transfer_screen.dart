@@ -88,12 +88,12 @@ class _TransferScreenState extends State<TransferScreen> {
           'A: ${destino.name}\n'
           'Monto: ${_dinero(monto)}'
           '${concepto.isEmpty ? '' : '\nConcepto: $concepto'}',
-          style: const TextStyle(color: AppTheme.textGrey, height: 1.5),
+          style: TextStyle(color: AppTheme.textGrey, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -140,7 +140,7 @@ class _TransferScreenState extends State<TransferScreen> {
     if (cuentas.length < 2) {
       return Scaffold(
         appBar: AppBar(title: const Text('Movimientos')),
-        body: const Center(
+        body: Center(
           child: Padding(
             padding: EdgeInsets.all(32),
             child: Text(
@@ -166,7 +166,7 @@ class _TransferScreenState extends State<TransferScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           // 1. Origen
-          const Text(
+          Text(
             'De la cuenta',
             style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
           ),
@@ -206,7 +206,7 @@ class _TransferScreenState extends State<TransferScreen> {
           const SizedBox(height: 24),
 
           // 2. Destino: solo se elige después del origen
-          const Text(
+          Text(
             'A la cuenta',
             style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
           ),
@@ -241,7 +241,7 @@ class _TransferScreenState extends State<TransferScreen> {
           const SizedBox(height: 24),
 
           // 3. Monto
-          const Text(
+          Text(
             'Monto',
             style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
           ),
@@ -266,7 +266,7 @@ class _TransferScreenState extends State<TransferScreen> {
           const SizedBox(height: 24),
 
           // 4. Concepto opcional
-          const Text(
+          Text(
             'Concepto (opcional)',
             style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
           ),

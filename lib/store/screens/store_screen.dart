@@ -140,7 +140,7 @@ class _StoreScreenState extends State<StoreScreen> {
                     saldo == null
                         ? 'Cuenta eliminada'
                         : 'Disponible: ${saldo.toStringAsFixed(0)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.textGrey,
                       fontSize: 13,
                     ),
@@ -196,13 +196,13 @@ class _StoreScreenState extends State<StoreScreen> {
                       saldoMetodo == null
                           ? 'Método eliminado'
                           : 'Disponible: ${saldoMetodo.toStringAsFixed(0)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.textGrey,
                         fontSize: 13,
                       ),
                     ),
                   ] else
-                    const Text(
+                    Text(
                       'Sin método (compra anterior)',
                       style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
                     ),
@@ -242,7 +242,7 @@ class _StoreScreenState extends State<StoreScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text(
+                child: Text(
                   'Cancelar',
                   style: TextStyle(color: AppTheme.textGrey),
                 ),
@@ -265,9 +265,9 @@ class _StoreScreenState extends State<StoreScreen> {
                     moneyId: metodoId,
                   ));
                 },
-                child: const Text(
+                child: Text(
                   'Guardar',
-                  style: TextStyle(color: AppTheme.buttonPurple),
+                  style: TextStyle(color: AppTheme.primary),
                 ),
               ),
             ],
@@ -356,12 +356,12 @@ class _StoreScreenState extends State<StoreScreen> {
           'El dinero regresará a '
           '${AccountService.getAccountName(compra.accountId)}'
           '${compra.moneyId == null ? '' : ' y a ${MoneyService.getName(compra.moneyId!)}'}.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -419,7 +419,7 @@ class _StoreScreenState extends State<StoreScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                             side: BorderSide(
-                              color: AppTheme.buttonPurple.withValues(
+                              color: AppTheme.primary.withValues(
                                 alpha: 0.3,
                               ),
                             ),
@@ -443,7 +443,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                         : ' · ${MoneyService.getName(c.moneyId!)}'),
                                 if (c.nota != null) c.nota!,
                               ].join('\n'),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppTheme.textGrey,
                                 fontSize: 12,
                               ),
@@ -502,7 +502,7 @@ class _StoreScreenState extends State<StoreScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const Text(
+                Text(
                   'Total del mes: ',
                   style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
                 ),

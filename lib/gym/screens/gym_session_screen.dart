@@ -158,12 +158,12 @@ class _GymSessionScreenState extends State<GymSessionScreen> {
           content: Text(
             'Quedan $vacias ${vacias == 1 ? "serie" : "series"} sin anotar.\n\n'
             'Se guardarán como 0.',
-            style: const TextStyle(color: AppTheme.textGrey),
+            style: TextStyle(color: AppTheme.textGrey),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text(
+              child: Text(
                 'Seguir anotando',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -263,9 +263,9 @@ class _GymSessionScreenState extends State<GymSessionScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(
+            Icon(
               Icons.edit_calendar,
-              color: AppTheme.buttonPurple,
+              color: AppTheme.primary,
               size: 18,
             ),
           ],
@@ -283,7 +283,7 @@ class _GymSessionScreenState extends State<GymSessionScreen> {
           color: AppTheme.bgDarkGrey,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: AppTheme.buttonPurple.withValues(alpha: 0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
           ),
         ),
         child: Column(
@@ -293,8 +293,8 @@ class _GymSessionScreenState extends State<GymSessionScreen> {
               children: [
                 Text(
                   '${ejercicio.orden}. ',
-                  style: const TextStyle(
-                    color: AppTheme.buttonPurple,
+                  style: TextStyle(
+                    color: AppTheme.primary,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
@@ -312,7 +312,7 @@ class _GymSessionScreenState extends State<GymSessionScreen> {
                 Text(
                   '${_peso(ejercicio)} · '
                   '${ejercicio.series}×${ejercicio.reps}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.textGrey,
                     fontSize: 12,
                   ),

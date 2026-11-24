@@ -42,12 +42,12 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
           '$motivo.\n\n'
           'Para poder abonarle, modifica sus cuentas, su dinero y sus '
           'porcentajes, o elimínalo.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -125,7 +125,7 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -222,11 +222,11 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.buttonPurple,
+                backgroundColor: AppTheme.primary,
               ),
-              child: const Text(
+              child: Text(
                 'Cerrar',
-                style: TextStyle(color: AppTheme.textWhite),
+                style: TextStyle(color: AppTheme.onPrimary),
               ),
             ),
           ],
@@ -248,19 +248,19 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Título
-            const Text(
+            Text(
               'Fondos a agregar',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.buttonPurple,
+                color: AppTheme.primary,
               ),
             ),
             const SizedBox(height: 20),
 
             // Lista de fondos o mensaje vacío
             if (funds.isEmpty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
                 child: Text(
                   'No hay fondos creados',
@@ -296,9 +296,9 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
                       trailing: NotificationDot(
                         visible: conProblema,
                         child: PopupMenuButton<String>(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.edit,
-                            color: AppTheme.buttonPurple,
+                            color: AppTheme.primary,
                             size: 20,
                           ),
                           color: AppTheme.bgDarkGrey,
@@ -371,7 +371,7 @@ class _SelectFundScreenState extends State<SelectFundScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.buttonPurple,
+                      backgroundColor: AppTheme.primary,
                     ),
                     child: const Text('Agregar Nuevo Fondo'),
                   ),

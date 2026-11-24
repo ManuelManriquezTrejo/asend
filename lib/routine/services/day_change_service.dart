@@ -16,7 +16,6 @@ class DayChangeService {
     // Verificar INMEDIATAMENTE (primera ejecución)
     final currentDay = _getCurrentDay();
     if (_lastCheckedDate == null) {
-      print('📅 PRIMERA EJECUCIÓN - Auto-rellenando días faltantes...');
       HabitHistoryService.fillMissingDaysWithZero().then((_) {
         if (_onDayChanged != null) {
           _onDayChanged!();
@@ -30,8 +29,6 @@ class DayChangeService {
       final currentDay = _getCurrentDay();
 
       if (_lastCheckedDate != null && currentDay != _lastCheckedDate) {
-        print('📅 ¡CAMBIO DE DÍA DETECTADO! ${_lastCheckedDate} → $currentDay');
-
         // Auto-rellenar días faltantes con 0
         await HabitHistoryService.fillMissingDaysWithZero();
 
@@ -43,15 +40,12 @@ class DayChangeService {
         _lastCheckedDate = currentDay;
       }
     });
-
-    print('✅ DayChangeService iniciado');
   }
 
   /// Detener monitoreo
   static void stopDayChangeListener() {
     _timer?.cancel();
     _timer = null;
-    print('❌ DayChangeService detenido');
   }
 
   /// Obtener "hoy" considerando DAILY_CUTOFF_HOUR

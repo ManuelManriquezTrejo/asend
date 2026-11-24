@@ -81,7 +81,7 @@ class _BalanceChipState extends State<BalanceChip> {
         ),
         children: opciones.isEmpty
             ? [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(16),
                   child: Text(
                     'No hay nada en este apartado',
@@ -106,7 +106,7 @@ class _BalanceChipState extends State<BalanceChip> {
                           ),
                           Text(
                             _formato(o.saldo),
-                            style: const TextStyle(color: AppTheme.textGrey),
+                            style: TextStyle(color: AppTheme.textGrey),
                           ),
                         ],
                       ),
@@ -133,7 +133,7 @@ class _BalanceChipState extends State<BalanceChip> {
       onPressed: () => Navigator.pop(ctx, valor),
       child: Row(
         children: [
-          Icon(icono, color: AppTheme.buttonPurple),
+          Icon(icono, color: AppTheme.primary),
           const SizedBox(width: 12),
           Text(texto, style: const TextStyle(color: AppTheme.textWhite)),
         ],
@@ -155,7 +155,7 @@ class _BalanceChipState extends State<BalanceChip> {
         child: Text(
           elegido == null ? 'Elegir cuenta' : _formato(elegido.saldo),
           style: TextStyle(
-            color: elegido == null ? AppTheme.textGrey : AppTheme.buttonPurple,
+            color: elegido == null ? AppTheme.textGrey : AppTheme.primary,
             fontSize: elegido == null ? 13 : 18,
             fontWeight: FontWeight.bold,
           ),

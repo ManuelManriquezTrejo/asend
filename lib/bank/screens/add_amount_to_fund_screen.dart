@@ -137,7 +137,7 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          content: const Text(
+          content: Text(
             'El dinero se ha distribuido correctamente entre las cuentas '
             'y tu dinero.',
             style: TextStyle(color: AppTheme.textGrey),
@@ -149,11 +149,11 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
                 Navigator.pop(context); // Cierra AddAmountToFundScreen
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.buttonPurple,
+                backgroundColor: AppTheme.primary,
               ),
-              child: const Text(
+              child: Text(
                 'Aceptar',
-                style: TextStyle(color: AppTheme.textWhite),
+                style: TextStyle(color: AppTheme.onPrimary),
               ),
             ),
           ],
@@ -198,15 +198,15 @@ class _AddAmountToFundScreenState extends State<AddAmountToFundScreen> {
             ElevatedButton(
               onPressed: _addAmountToFund,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.buttonPurple,
+                backgroundColor: AppTheme.primary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 50,
                   vertical: 15,
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Agregar',
-                style: TextStyle(fontSize: 16, color: AppTheme.textWhite),
+                style: TextStyle(fontSize: 16, color: AppTheme.onPrimary),
               ),
             ),
           ],

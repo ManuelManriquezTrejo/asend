@@ -109,7 +109,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
           '¿Salir de la medición?',
           style: TextStyle(color: AppTheme.textWhite),
         ),
-        content: const Text(
+        content: Text(
           'Lo que ya guardaste se conserva. '
           'Al volver hoy, continúas donde quedaste.',
           style: TextStyle(color: AppTheme.textGrey),
@@ -117,7 +117,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Seguir midiendo',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -174,7 +174,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
         children: [
           Text(
             'Zona ${_indice + 1} de ${_zonas.length}',
-            style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
+            style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
           ),
           const SizedBox(height: 8),
           ClipRRect(
@@ -183,7 +183,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
               value: (_indice + 1) / _zonas.length,
               minHeight: 6,
 
-              valueColor: const AlwaysStoppedAnimation(AppTheme.buttonPurple),
+              valueColor: AlwaysStoppedAnimation(AppTheme.primary),
             ),
           ),
         ],
@@ -224,7 +224,7 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
             decoration: InputDecoration(
               hintText: '0',
               suffixText: _zona.unidad,
-              suffixStyle: const TextStyle(
+              suffixStyle: TextStyle(
                 color: AppTheme.textGrey,
                 fontSize: 18,
               ),
@@ -257,14 +257,14 @@ class _AddMeasurementScreenState extends State<AddMeasurementScreen> {
               onPressed: _guardando ? null : _atras,
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(48),
-                side: const BorderSide(color: AppTheme.buttonPurple),
+                side: BorderSide(color: AppTheme.primary),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
               child: Text(
                 _indice == 0 ? 'Salir' : 'Atrás',
-                style: const TextStyle(color: AppTheme.buttonPurple),
+                style: TextStyle(color: AppTheme.primary),
               ),
             ),
           ),

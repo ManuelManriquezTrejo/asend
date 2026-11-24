@@ -73,7 +73,7 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
       _rango!.start.add(Duration(days: x.round()));
 
   /// Días que abarca la gráfica completa.
-  int get _totalDias => _rango!.end.difference(_rango!.start).inDays;
+  int get _totalDias => _rango!.end.difference(_rango.start).inDays;
 
   /// Acercamiento máximo: el necesario para que quepa una semana.
   /// Con poco historial no tiene sentido acercar mucho.
@@ -124,7 +124,7 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: Text(
             resaltada == null
-                ? '${_fechaCorta(_rango!.start)} — ${_fechaCorta(_rango!.end)}'
+                ? '${_fechaCorta(_rango!.start)} — ${_fechaCorta(_rango.end)}'
                 : resaltada.nombre,
             style: TextStyle(
               color: resaltada == null
@@ -152,7 +152,7 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
             ),
           ),
         ),
-        const Divider(height: 1, color: AppTheme.bgDarkGrey),
+        Divider(height: 1, color: AppTheme.bgDarkGrey),
         Expanded(
           flex: 2,
           child: ListView(
@@ -291,7 +291,7 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
       borderData: FlBorderData(
         show: true,
         border: Border.all(
-          color: AppTheme.buttonPurple.withValues(alpha: 0.3),
+          color: AppTheme.primary.withValues(alpha: 0.3),
         ),
       ),
       titlesData: FlTitlesData(
@@ -305,7 +305,7 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
               meta: meta,
               child: Text(
                 _numero(valor),
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.textGrey,
                   fontSize: 10,
                 ),
@@ -323,7 +323,7 @@ class _ChartViewScreenState extends State<ChartViewScreen> {
                 meta: meta,
                 child: Text(
                   '${fecha.day} ${_mesesCortos[fecha.month]}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.textGrey,
                     fontSize: 10,
                   ),

@@ -148,7 +148,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                     'Estás a punto de pagar ${cuotas.length} '
                     '${cuotas.length == 1 ? 'pago' : 'pagos'} '
                     'por la cantidad de ${_dinero(total)}.',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.textGrey,
                       height: 1.4,
                     ),
@@ -236,7 +236,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
             actions: [
               TextButton(
                 onPressed: pagando ? null : () => Navigator.pop(context),
-                child: const Text(
+                child: Text(
                   'Cancelar',
                   style: TextStyle(color: AppTheme.textGrey),
                 ),
@@ -244,7 +244,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.success,
-                  foregroundColor: Colors.black,
+                  foregroundColor: AppTheme.textBlack,
                 ),
                 onPressed: pagando
                     ? null
@@ -329,7 +329,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                 ),
                 subtitle: Text(
                   '${_dinero(d.monto)} · día ${d.diaPago} de cada mes',
-                  style: const TextStyle(color: AppTheme.textGrey),
+                  style: TextStyle(color: AppTheme.textGrey),
                 ),
                 onTap: () => Navigator.pop(context, d),
               );
@@ -339,7 +339,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Volver',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -370,7 +370,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
               'Cancelar "${elegida.nombre}"',
               style: const TextStyle(color: AppTheme.textWhite),
             ),
-            content: const Text(
+            content: Text(
               'Se recomienda cancelar primero la suscripción antes de '
               'borrar el recordatorio.',
               style: TextStyle(color: AppTheme.textGrey, height: 1.4),
@@ -378,7 +378,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text(
+                child: Text(
                   'Volver',
                   style: TextStyle(color: AppTheme.textGrey),
                 ),
@@ -463,7 +463,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
             // Lo marcado y los botones
             Container(
               padding: EdgeInsets.fromLTRB(e.w(5), e.h(1.2), e.w(5), e.h(2)),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(color: AppTheme.bgDarkGrey, width: 2),
                 ),
@@ -496,7 +496,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                                 : () => _pagar(lista),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.success,
-                              foregroundColor: Colors.black,
+                              foregroundColor: AppTheme.textBlack,
                               disabledBackgroundColor: AppTheme.disabled,
                             ),
                             child: Text(
@@ -575,12 +575,12 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
           Text(
             '${_meses[fecha.month]} ${fecha.year}',
             style: TextStyle(
-              color: AppTheme.buttonPurple,
+              color: AppTheme.primary,
               fontSize: e.t(4.2),
               fontWeight: FontWeight.bold,
             ),
           ),
-          Divider(color: AppTheme.buttonPurple.withValues(alpha: 0.5)),
+          Divider(color: AppTheme.primary.withValues(alpha: 0.5)),
         ],
       ),
     );

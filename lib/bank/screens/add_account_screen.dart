@@ -92,15 +92,15 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             ElevatedButton(
               onPressed: _saveAccount,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.buttonPurple,
+                backgroundColor: AppTheme.primary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 50,
                   vertical: 15,
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Guardar Cuenta',
-                style: TextStyle(fontSize: 16, color: AppTheme.textWhite),
+                style: TextStyle(fontSize: 16, color: AppTheme.onPrimary),
               ),
             ),
           ],

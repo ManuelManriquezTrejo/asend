@@ -72,7 +72,7 @@ class _EditMoneyScreenState extends State<EditMoneyScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -187,7 +187,7 @@ class _EditMoneyScreenState extends State<EditMoneyScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
+              child: Text(
                 'Cancelar',
                 style: TextStyle(color: AppTheme.textGrey),
               ),
@@ -294,12 +294,12 @@ class _EditMoneyScreenState extends State<EditMoneyScreen> {
         content: Text(
           'Se eliminará "${m.name}".\n\n'
           'Su historial de movimientos se conserva.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(color: AppTheme.textGrey),
             ),
@@ -417,8 +417,10 @@ class _EditMoneyScreenState extends State<EditMoneyScreen> {
     required IconData icono,
     required String texto,
     required VoidCallback onTap,
-    Color color = AppTheme.buttonPurple,
+    Color? color,
   }) {
+    // Sin color indicado se usa el principal del tema
+    color ??= AppTheme.primary;
     return Padding(
       padding: EdgeInsets.only(bottom: e.h(1.5)),
       child: Material(

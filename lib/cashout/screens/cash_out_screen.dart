@@ -67,7 +67,7 @@ class _CashOutScreenState extends State<CashOutScreen> {
                 ),
                 subtitle: Text(
                   'Saldo: ${c.balance}',
-                  style: const TextStyle(color: AppTheme.textGrey),
+                  style: TextStyle(color: AppTheme.textGrey),
                 ),
                 onTap: () => Navigator.pop(dialogContext, c),
               );
@@ -112,7 +112,7 @@ class _CashOutScreenState extends State<CashOutScreen> {
         ),
         content: Text(
           'Se cobrarán $total en total.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
@@ -147,7 +147,7 @@ class _CashOutScreenState extends State<CashOutScreen> {
         ),
         content: Text(
           '"${pago.nombre}" de ${pago.cantidad} se eliminará sin cobrarse.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
@@ -190,7 +190,7 @@ class _CashOutScreenState extends State<CashOutScreen> {
               color: AppTheme.bgDarkGrey,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: eliminada ? AppTheme.danger : AppTheme.buttonPurple,
+                color: eliminada ? AppTheme.danger : AppTheme.primary,
               ),
             ),
             child: Text(
@@ -260,7 +260,7 @@ class _CashOutScreenState extends State<CashOutScreen> {
           // Lista de pendientes
           Expanded(
             child: pendientes.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'No hay pagos pendientes',
                       style: TextStyle(fontSize: 16, color: AppTheme.textGrey),
@@ -279,7 +279,7 @@ class _CashOutScreenState extends State<CashOutScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                             side: BorderSide(
-                              color: AppTheme.buttonPurple.withValues(
+                              color: AppTheme.primary.withValues(
                                 alpha: 0.3,
                               ),
                             ),
@@ -295,7 +295,7 @@ class _CashOutScreenState extends State<CashOutScreen> {
                             ),
                             subtitle: Text(
                               '${_fecha(p.fecha)} · ${p.origen}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppTheme.textGrey,
                                 fontSize: 12,
                               ),
@@ -344,7 +344,7 @@ class _CashOutScreenState extends State<CashOutScreen> {
               16,
               MediaQuery.of(context).size.height * 0.02,
             ),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
                 top: BorderSide(color: AppTheme.bgDarkGrey, width: 2),
               ),
@@ -354,7 +354,7 @@ class _CashOutScreenState extends State<CashOutScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Total pendiente',
                       style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
                     ),

@@ -32,7 +32,7 @@ class _MissionBoardScreenState extends State<MissionBoardScreen> {
               ? '"${mission.nombre}" se eliminará sin generar pago.'
               : '"${mission.nombre}" y sus ${subs.length} submisiones se '
                     'eliminarán sin generar pago.',
-          style: const TextStyle(color: AppTheme.textGrey),
+          style: TextStyle(color: AppTheme.textGrey),
         ),
         actions: [
           TextButton(
@@ -69,7 +69,7 @@ class _MissionBoardScreenState extends State<MissionBoardScreen> {
         children: [
           Expanded(
             child: principales.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'No hay misiones activas',
                       style: TextStyle(fontSize: 16, color: AppTheme.textGrey),
@@ -89,7 +89,7 @@ class _MissionBoardScreenState extends State<MissionBoardScreen> {
                             color: AppTheme.bgDarkGrey,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: AppTheme.buttonPurple.withValues(
+                              color: AppTheme.primary.withValues(
                                 alpha: 0.3,
                               ),
                             ),
@@ -108,7 +108,7 @@ class _MissionBoardScreenState extends State<MissionBoardScreen> {
                                   setState(() {});
                                 },
                                 fillColor: WidgetStateProperty.all(
-                                  AppTheme.buttonPurple,
+                                  AppTheme.primary,
                                 ),
                               ),
                               title: Text(
@@ -122,7 +122,7 @@ class _MissionBoardScreenState extends State<MissionBoardScreen> {
                               subtitle: Text(
                                 'Paga ${m.valor} · Inicio: ${_fecha(m.fechaInicio)}'
                                 ' · Límite: ${_fecha(m.fechaLimite)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppTheme.textGrey,
                                   fontSize: 11,
                                 ),
@@ -132,7 +132,7 @@ class _MissionBoardScreenState extends State<MissionBoardScreen> {
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.edit, size: 20),
-                                    color: AppTheme.buttonPurple,
+                                    color: AppTheme.primary,
                                     tooltip: 'Modificar',
                                     onPressed: () {
                                       Navigator.push(
@@ -167,7 +167,7 @@ class _MissionBoardScreenState extends State<MissionBoardScreen> {
                                         setState(() {});
                                       },
                                       fillColor: WidgetStateProperty.all(
-                                        AppTheme.buttonPurple,
+                                        AppTheme.primary,
                                       ),
                                     ),
                                     title: Text(
@@ -185,7 +185,7 @@ class _MissionBoardScreenState extends State<MissionBoardScreen> {
                                     subtitle: Text(
                                       'Inicio: ${_fecha(s.fechaInicio)}'
                                       ' · Límite: ${_fecha(s.fechaLimite)}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: AppTheme.textGrey,
                                         fontSize: 10,
                                       ),
@@ -198,7 +198,7 @@ class _MissionBoardScreenState extends State<MissionBoardScreen> {
                                             Icons.edit,
                                             size: 18,
                                           ),
-                                          color: AppTheme.buttonPurple,
+                                          color: AppTheme.primary,
                                           onPressed: () {
                                             Navigator.push(
                                               context,

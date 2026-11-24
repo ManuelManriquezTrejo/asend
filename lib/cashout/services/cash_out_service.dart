@@ -74,11 +74,6 @@ class CashOutService {
         createdAt: DateTime.now(),
       ),
     );
-
-    print(
-      '💰 Pago diario generado: ${fecha.toIso8601String().split('T')[0]} '
-      '= $cantidad (de ${total.toStringAsFixed(2)})',
-    );
   }
 
   /// Genera el pago de una misión completada
@@ -99,8 +94,6 @@ class CashOutService {
         createdAt: ahora,
       ),
     );
-
-    print('💰 Pago de misión generado: $nombre = ${valor.floor()}');
   }
 
   /// Pagos pendientes, más antiguos primero
@@ -186,11 +179,6 @@ class CashOutService {
     pago.pagadoAt = DateTime.now();
     await savePago(pago);
 
-    print(
-      '💵 Cobrado: ${pago.nombre} = ${pago.cantidad} '
-      '(${paga.name} → ${recibe.name})',
-    );
-
     return (ok: true, mensaje: 'Cobrado ${pago.cantidad}');
   }
 
@@ -261,11 +249,6 @@ class CashOutService {
       await savePago(p);
     }
 
-    print(
-      '💵 Cobrado en bloque: ${pendientes.length} pagos = $total '
-      '(${paga.name} → ${recibe.name})',
-    );
-
     return (
       cobrados: pendientes.length,
       mensaje: 'Se cobraron ${pendientes.length} pagos',
@@ -276,6 +259,5 @@ class CashOutService {
   static Future<void> eliminarPago(CashOut pago) async {
     pago.deletedAt = DateTime.now();
     await savePago(pago);
-    print('🗑 Pago eliminado: ${pago.nombre}');
   }
 }
