@@ -2,6 +2,7 @@ import 'package:asend/models/mission.dart';
 import 'package:asend/models/mission_history.dart';
 import 'package:asend/database/mission_hive_service.dart';
 import 'package:asend/cashout/services/cash_out_service.dart';
+import 'package:asend/stats/services/stat_service.dart';
 
 class MissionService {
   /// Misiones principales activas, ordenadas por fechaInicio.
@@ -109,7 +110,8 @@ class MissionService {
   }
 
   /// Completar una misión principal:
-  /// guarda en historial, genera el pago y archiva la misión con sus hijas.
+  /// guarda en historial, genera el pago, da sus puntos de magia y
+  /// archiva la misión con sus hijas.
   static Future<void> completeMission(Mission mission) async {
     if (mission.parentId != null) return; // solo principales
 
@@ -136,6 +138,9 @@ class MissionService {
       nombre: mission.nombre,
       valor: mission.valor,
     );
+
+    // Puntos de magia de Stats, si la misión da
+    await StatService.premiarMision(mission);
 
     // Soft delete en cascada: la misión y todas sus hijas
     final now = DateTime.now();

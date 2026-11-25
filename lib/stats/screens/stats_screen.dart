@@ -63,7 +63,7 @@ class _StatsScreenState extends State<StatsScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.link, color: AppTheme.primary, size: e.t(7)),
-            tooltip: 'Vincular hábitos',
+            tooltip: 'Vincular hábitos y misiones',
             onPressed: () => _abrir(const LinkHabitsScreen()),
           ),
         ],

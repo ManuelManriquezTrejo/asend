@@ -2,6 +2,8 @@ import 'package:asend/database/routine_hive_service.dart';
 import 'package:asend/database/stats_hive_service.dart';
 import 'package:asend/models/daily_routine_habit.dart';
 import 'package:asend/models/magic.dart';
+import 'package:asend/models/mission.dart';
+import 'package:asend/models/mission_magic_point.dart';
 import 'package:asend/models/skill.dart';
 import 'package:asend/models/stat.dart';
 import 'package:asend/models/stat_link.dart';
@@ -438,11 +440,25 @@ class StatService {
 
   static int rangoMagia(Magic m) => rangoDe(m.puntos, m.umbrales);
 
-  /// Cada punto que gana Mana es también un punto de magia.
-  static int puntosMagiaTotales() {
+  /// Puntos de magia que vienen de Mana: cada punto que gana Mana es
+  /// también un punto de magia.
+  static int puntosMagiaDeMana() {
     final mana = getMana();
     return mana == null ? 0 : puntos(mana.id);
   }
+
+  /// Puntos de magia ganados al completar misiones.
+  static int puntosMagiaDeMisiones() {
+    var total = 0;
+    for (final p in StatsHiveService.getMissionPointsBox().values) {
+      if (p.deletedAt == null) total += p.puntos;
+    }
+    return total;
+  }
+
+  /// Todos los puntos de magia ganados: Mana más misiones.
+  static int puntosMagiaTotales() =>
+      puntosMagiaDeMana() + puntosMagiaDeMisiones();
 
   /// Puntos de magia que aún no están en ninguna magia.
   static int puntosMagiaDisponibles() {
@@ -600,6 +616,52 @@ class StatService {
     }
     magia.deletedAt = ahora;
     await StatsHiveService.getMagicsBox().put(magia.id, magia);
+  }
+
+  // ── Misiones ───────────────────────────────────────────
+
+  /// Puntos de magia que dará una misión al completarse (0 si no se
+  /// configuró).
+  static int puntosDeMision(int missionId) =>
+      StatsHiveService.getMissionRewardsBox().get(missionId, defaultValue: 0)
+          as int;
+
+  /// Cambia los puntos de magia de una misión. Devuelve null o el error.
+  static Future<String?> setPuntosDeMision(int missionId, int puntos) async {
+    if (puntos < 0) return 'Los puntos no pueden ser negativos';
+    final box = StatsHiveService.getMissionRewardsBox();
+    if (puntos == 0) {
+      await box.delete(missionId);
+    } else {
+      await box.put(missionId, puntos);
+    }
+    return null;
+  }
+
+  /// Al completar una misión: si da puntos de magia, se suman en ese
+  /// momento a los disponibles. Corre aunque Stats esté apagado.
+  static Future<void> premiarMision(Mission mision) async {
+    final puntos = puntosDeMision(mision.id);
+    if (puntos <= 0) return;
+
+    final box = StatsHiveService.getMissionPointsBox();
+    final registro = MissionMagicPoint(
+      id: _siguienteId(box.values.map((p) => p.id)),
+      missionId: mision.id,
+      nombre: mision.nombre,
+      puntos: puntos,
+      fecha: DateTime.now(),
+    );
+    await box.put(registro.id, registro);
+  }
+
+  /// Misiones completadas que dieron puntos, la más reciente primero.
+  static List<MissionMagicPoint> getPuntosDeMisiones() {
+    final lista = StatsHiveService.getMissionPointsBox().values
+        .where((p) => p.deletedAt == null)
+        .toList()
+      ..sort((a, b) => b.fecha.compareTo(a.fecha));
+    return lista;
   }
 
   // ── Rango general ──────────────────────────────────────

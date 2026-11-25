@@ -1,12 +1,15 @@
+import 'package:asend/missions/services/mission_service.dart';
 import 'package:asend/models/daily_routine_habit.dart';
+import 'package:asend/models/mission.dart';
 import 'package:asend/stats/services/stat_service.dart';
 import 'package:asend/stats/widgets/stat_widgets.dart';
 import 'package:asend/theme/app_theme.dart';
 import 'package:asend/theme/escala.dart';
 import 'package:flutter/material.dart';
 
-/// Todos los hábitos de Rutina con la estadística que alimentan y
-/// cuántos puntos dan. Tocar uno permite cambiar el vínculo o el valor.
+/// Dos pestañas: los hábitos de Rutina con la estadística que alimentan
+/// y cuántos puntos dan, y las misiones con los puntos de magia que dan
+/// al completarse. El lápiz de cada uno permite cambiarlo.
 class LinkHabitsScreen extends StatefulWidget {
   /// Si se abre desde una estadística, empieza filtrada por ella.
   final int? statIdInicial;
@@ -21,6 +24,12 @@ class _LinkHabitsScreenState extends State<LinkHabitsScreen> {
   static const String _todos = 'todos';
   static const String _vinculados = 'vinculados';
   static const String _sinVincular = 'sin';
+
+  static const String _conPuntos = 'con';
+  static const String _sinPuntos = 'sin';
+
+  /// Filtro de la pestaña Misiones.
+  String _misionesFiltro = _todos;
 
   String _estado = _todos;
 
@@ -46,36 +55,59 @@ class _LinkHabitsScreenState extends State<LinkHabitsScreen> {
   @override
   Widget build(BuildContext context) {
     final e = Escala(context);
+
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Vincular'),
+          bottom: TabBar(
+            indicatorColor: AppTheme.primary,
+            labelColor: AppTheme.primary,
+            unselectedLabelColor: AppTheme.textGrey,
+            tabs: const [
+              Tab(text: 'Hábitos'),
+              Tab(text: 'Misiones'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [_pestanaHabitos(e), _pestanaMisiones(e)],
+        ),
+      ),
+    );
+  }
+
+  Widget _vacio(Escala e, String texto) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(e.w(8)),
+        child: Text(
+          texto,
+          textAlign: TextAlign.center,
+          style: TextStyle(color: AppTheme.textGrey, fontSize: e.t(4)),
+        ),
+      ),
+    );
+  }
+
+  // ── Hábitos ────────────────────────────────────────────
+
+  Widget _pestanaHabitos(Escala e) {
     final habitos = _filtrados();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Vincular hábitos')),
-      body: Column(
-        children: [
-          _filtros(e),
-          Expanded(
-            child: habitos.isEmpty
-                ? Center(
-                    child: Text(
-                      'No hay hábitos con estos filtros',
-                      style: TextStyle(
-                        color: AppTheme.textGrey,
-                        fontSize: e.t(4),
-                      ),
-                    ),
-                  )
-                : ListView(
-                    padding: EdgeInsets.fromLTRB(
-                      e.w(5),
-                      e.h(1),
-                      e.w(5),
-                      e.h(2),
-                    ),
-                    children: [for (final h in habitos) _tarjeta(e, h)],
-                  ),
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        _filtros(e),
+        Expanded(
+          child: habitos.isEmpty
+              ? _vacio(e, 'No hay hábitos con estos filtros')
+              : ListView(
+                  padding: EdgeInsets.fromLTRB(e.w(5), e.h(1), e.w(5), e.h(2)),
+                  children: [for (final h in habitos) _tarjeta(e, h)],
+                ),
+        ),
+      ],
     );
   }
 
@@ -274,6 +306,165 @@ class _LinkHabitsScreenState extends State<LinkHabitsScreen> {
     // cierre; liberarlo antes rompe el árbol de widgets
     await Future.delayed(const Duration(milliseconds: 300));
     factorCtrl.dispose();
+    if (mounted) setState(() {});
+  }
+
+  // ── Misiones ───────────────────────────────────────────
+
+  List<Mission> _misionesFiltradas() {
+    return MissionService.getPrincipales().where((m) {
+      final puntos = StatService.puntosDeMision(m.id);
+      if (_misionesFiltro == _conPuntos && puntos == 0) return false;
+      if (_misionesFiltro == _sinPuntos && puntos > 0) return false;
+      return true;
+    }).toList();
+  }
+
+  Widget _pestanaMisiones(Escala e) {
+    final misiones = _misionesFiltradas();
+    final completadas = StatService.getPuntosDeMisiones();
+
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          color: AppTheme.bgDarkGrey,
+          padding: EdgeInsets.symmetric(horizontal: e.w(4), vertical: e.h(0.5)),
+          child: Row(
+            children: [
+              DropdownButton<String>(
+                value: _misionesFiltro,
+                dropdownColor: AppTheme.bgDarkGrey,
+                style: TextStyle(color: AppTheme.textWhite, fontSize: e.t(3.6)),
+                underline: const SizedBox(),
+                items: const [
+                  DropdownMenuItem(value: _todos, child: Text('Todas')),
+                  DropdownMenuItem(value: _conPuntos, child: Text('Con puntos')),
+                  DropdownMenuItem(value: _sinPuntos, child: Text('Sin puntos')),
+                ],
+                onChanged: (v) => setState(() => _misionesFiltro = v ?? _todos),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(e.w(5), e.h(1), e.w(5), e.h(2)),
+            children: [
+              Padding(
+                padding: EdgeInsets.only(bottom: e.h(1)),
+                child: Text(
+                  'Solo las misiones principales. Al completarlas, sus puntos '
+                  'van directo a los puntos de magia disponibles.',
+                  style: TextStyle(color: AppTheme.textHint, fontSize: e.t(3.3)),
+                ),
+              ),
+              if (misiones.isEmpty)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: e.h(3)),
+                  child: Text(
+                    'No hay misiones con este filtro',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppTheme.textGrey, fontSize: e.t(4)),
+                  ),
+                ),
+              for (final m in misiones) _tarjetaMision(e, m),
+              if (completadas.isNotEmpty) ...[
+                SizedBox(height: e.h(2)),
+                const TituloSeccion('Ya completadas'),
+                for (final c in completadas)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: e.h(0.8)),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${c.nombre} · ${_fecha(c.fecha)}',
+                            style: TextStyle(
+                              color: AppTheme.textGrey,
+                              fontSize: e.t(3.6),
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '+${c.puntos}',
+                          style: TextStyle(
+                            color: AppTheme.primary,
+                            fontSize: e.t(3.8),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _tarjetaMision(Escala e, Mission m) {
+    final puntos = StatService.puntosDeMision(m.id);
+
+    return Recuadro(
+      resaltado: puntos > 0,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  m.nombre,
+                  style: TextStyle(
+                    color: AppTheme.textWhite,
+                    fontSize: e.t(4.2),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  m.taken ? 'Misión tomada' : 'En el tablón',
+                  style: TextStyle(color: AppTheme.textHint, fontSize: e.t(3.2)),
+                ),
+                SizedBox(height: e.h(0.4)),
+                Text(
+                  puntos > 0
+                      ? 'Da $puntos puntos de magia'
+                      : 'Sin puntos de magia',
+                  style: TextStyle(color: AppTheme.textGrey, fontSize: e.t(3.5)),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.edit, color: AppTheme.textHint, size: e.t(5.5)),
+            tooltip: 'Cambiar puntos',
+            onPressed: () => _editarMision(m),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _editarMision(Mission m) async {
+    final texto = await pedirTexto(
+      context,
+      titulo: m.nombre,
+      etiqueta: 'Puntos de magia al completarla',
+      inicial: '${StatService.puntosDeMision(m.id)}',
+      numerico: true,
+      validar: (t) {
+        final valor = int.tryParse(t.trim());
+        if (valor == null) return 'Escribe un número entero, por ejemplo 5';
+        if (valor < 0) return 'Los puntos no pueden ser negativos';
+        return null;
+      },
+    );
+    if (texto == null) return;
+
+    await StatService.setPuntosDeMision(m.id, int.parse(texto.trim()));
     if (mounted) setState(() {});
   }
 }

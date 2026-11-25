@@ -106,7 +106,9 @@ class _AssignMagicPointsScreenState extends State<AssignMagicPointsScreen> {
           Padding(
             padding: EdgeInsets.only(bottom: e.h(1.5)),
             child: Text(
-              'Total ganado por Mana: ${StatService.puntosMagiaTotales()}. '
+              'Ganados: ${StatService.puntosMagiaTotales()} '
+              '(de Mana: ${StatService.puntosMagiaDeMana()} · '
+              'de misiones: ${StatService.puntosMagiaDeMisiones()}). '
               'Los que no asignes se quedan pendientes.',
               style: TextStyle(color: AppTheme.textHint, fontSize: e.t(3.3)),
             ),
