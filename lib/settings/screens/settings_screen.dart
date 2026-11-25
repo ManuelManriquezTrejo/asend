@@ -43,7 +43,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _interruptor(
             e,
             titulo: 'Stats',
-            descripcion: 'En desarrollo',
+            descripcion: 'Muestra Stats en Actividades',
             valor: AppSettingsService.statsActivo(),
             onChanged: (v) async {
               await AppSettingsService.setStatsActivo(v);
@@ -82,17 +82,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         color: AppTheme.bgDarkGrey,
         borderRadius: BorderRadius.circular(e.t(2.5)),
       ),
-      child: SwitchListTile(
-        value: valor,
-        onChanged: onChanged,
-        activeThumbColor: AppTheme.primary,
-        title: Text(
-          titulo,
-          style: TextStyle(color: AppTheme.textWhite, fontSize: e.t(4.2)),
-        ),
-        subtitle: Text(
-          descripcion,
-          style: TextStyle(color: AppTheme.textGrey, fontSize: e.t(3.5)),
+      // Capa Material transparente: el interruptor dibuja su efecto al
+      // tocar encima del fondo gris y no debajo
+      child: Material(
+        type: MaterialType.transparency,
+        child: SwitchListTile(
+          value: valor,
+          onChanged: onChanged,
+          activeThumbColor: AppTheme.primary,
+          title: Text(
+            titulo,
+            style: TextStyle(color: AppTheme.textWhite, fontSize: e.t(4.2)),
+          ),
+          subtitle: Text(
+            descripcion,
+            style: TextStyle(color: AppTheme.textGrey, fontSize: e.t(3.5)),
+          ),
         ),
       ),
     );

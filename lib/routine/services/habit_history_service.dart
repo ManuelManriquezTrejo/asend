@@ -4,6 +4,7 @@ import 'package:asend/models/daily_routine_habit.dart';
 import 'package:asend/database/routine_hive_service.dart';
 import 'package:asend/config/app_config.dart';
 import 'package:asend/cashout/services/cash_out_service.dart';
+import 'package:asend/stats/services/stat_service.dart';
 
 class HabitHistoryService {
   /// ÚNICA fuente de verdad para "qué día es hoy".
@@ -189,6 +190,10 @@ class HabitHistoryService {
           dia = dia.add(const Duration(days: 1));
         }
       }
+
+      // Puntos de Stats de cada día cerrado. Corre aunque Stats esté
+      // apagado, para que los puntos se sigan acumulando.
+      await StatService.procesarDiasCerrados();
     } catch (e) {
       debugPrint('❌ Error en auto-relleno: $e');
     }

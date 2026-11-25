@@ -13,6 +13,7 @@ import 'package:asend/database/hive_service.dart';
 import 'package:asend/database/mission_hive_service.dart';
 import 'package:asend/database/money_hive_service.dart';
 import 'package:asend/database/routine_hive_service.dart';
+import 'package:asend/database/stats_hive_service.dart';
 import 'package:asend/database/store_hive_service.dart';
 import 'package:asend/goals/services/goal_service.dart';
 import 'package:asend/home/widgets/balance_chip.dart';
@@ -28,6 +29,7 @@ import 'package:asend/routine/services/habit_history_service.dart';
 import 'package:asend/routine/widgets/habit_completion_dialogs.dart';
 import 'package:asend/settings/screens/settings_screen.dart';
 import 'package:asend/settings/services/app_settings_service.dart';
+import 'package:asend/stats/services/stat_service.dart';
 import 'package:asend/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -73,6 +75,10 @@ void main() async {
 
   // Inicializar ajustes generales (color del tema y Stats)
   await AppSettingsService.initializeAppSettings();
+
+  // Inicializar Hive de Stats y crear las estadísticas base la primera vez
+  await StatsHiveService.initializeStatsHive();
+  await StatService.asegurarInicio();
 
   // Crear la cuenta Metas si todavía no existe (necesita Banco, Pagos,
   // Metas y Dinero ya abiertos)

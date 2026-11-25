@@ -11,6 +11,8 @@ import 'package:asend/goals/screens/goals_screen.dart';
 import 'package:asend/gym/screens/gym_screen.dart';
 import 'package:asend/missions/screens/mission_board_screen.dart';
 import 'package:asend/routine/screens/routine_list_screen.dart';
+import 'package:asend/settings/services/app_settings_service.dart';
+import 'package:asend/stats/screens/stats_screen.dart';
 import 'package:asend/store/screens/store_screen.dart';
 import 'package:asend/theme/app_theme.dart';
 import 'package:asend/theme/notification_dot.dart';
@@ -43,8 +45,9 @@ class _Seccion {
 }
 
 /// Secciones de izquierda a derecha.
-/// Los módulos de cada una van de arriba hacia abajo.
-final List<_Seccion> _secciones = [
+/// Los módulos de cada una van de arriba hacia abajo. Es una función
+/// para que Stats aparezca o desaparezca según su interruptor.
+List<_Seccion> get _secciones => [
   _Seccion(Icons.account_balance_wallet, 'Economía', [
     _Opcion(
       Icons.account_balance,
@@ -67,6 +70,8 @@ final List<_Seccion> _secciones = [
     _Opcion(Icons.savings, 'Metas', () => const GoalsScreen()),
   ]),
   _Seccion(Icons.bolt, 'Actividades', [
+    if (AppSettingsService.statsActivo())
+      _Opcion(Icons.auto_awesome, 'Stats', () => const StatsScreen()),
     _Opcion(Icons.checklist, 'Rutina', () => const RoutineListScreen()),
     _Opcion(Icons.map, 'Misiones', () => const MissionBoardScreen()),
   ]),
